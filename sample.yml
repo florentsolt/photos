@@ -1,0 +1,53 @@
+# This file describe a photo stream.
+# It should be put in an empty folder
+# Then run: rake photos:all[name-of-the-folder]
+
+# The source of the pictures
+# It can be on Flickr, with xxx = the set ID
+set: flickr://xxx
+# It can be a local zip file 
+set: zip:///path/to/file.zip
+# It can be a remote zip file, via scp
+set: zip+scp://user@host/path/to/file.zip
+# It can be a remote zip file, via http
+set: zip+http://example.com/path/to/file.zip
+# Or an array of many urls
+set:
+  - flickr://xxx
+  - zip+scp://user@host/path/to/file.zip
+
+# The size of the thumbnails
+size: 200
+
+# Title of the photo stream
+title: Pictures of the day
+
+# Description of the photo stream
+desc: Random photos from my trips and walks
+
+# Generate a zip file with all the picture ?
+zip: true
+
+# The font used, get the name from http://www.google.com/webfonts
+font: 'Poiret One'
+
+# Display order, it can be "reverse" or "normal", by default it's "normal"
+sort: "reverse"
+
+# Display exif informations in the footer ?
+exif: true
+
+# Display date in the footer ?
+date: true
+
+# Display share buttons in the footer ?
+share: true
+
+# Thumbnails style, it can be: nothing, "inset", "polaroid"
+style: inset
+
+# The thumbnail to choose "resize" or "square"
+thumb: resize
+
+# Display stats link in the the footer (even if it's false, /stats will be available)
+stats: true
