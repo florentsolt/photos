@@ -1,4 +1,13 @@
 ---
+
+# Look for sample.yml to see wich file to put in "path" subfolder
+# For example, a photo stream will be located on the filesystem here:
+# - /path/for/your/albums/$name
+# So the config file:
+# - /path/for/your/albums/$name/config.yml
+# So the url will be:
+# - http://example.com/$name
+
 path: "/path/for/your/albums"
 flickr:
   apikey: http://www.flickr.com/services/apps/create/apply
