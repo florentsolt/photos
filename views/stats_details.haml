@@ -1,0 +1,58 @@
+-# encoding:utf-8
+#stats-details
+  %table
+    %tr
+      %th.title{:colspan => 5}
+        %a#details_prev{:href => "#", :class => "icon-arrow-left"}
+        = l Date.new(*params[:date].split('-').map{|v|v.to_i}), :full
+        %a#details_next{:href => "#", :class => "icon-arrow-right"}
+    %tr
+      %th
+      %th.flickr
+        .icon
+          .icon-circle>
+          .icon-circle<
+          flickr
+      %th.ganalytics
+        .icon
+          .icon-bar-chart
+          analytics
+      %th.sum= t.stats.total
+      %th.total= t.stats.all
+    %tr.odd
+      %td.grand_total
+        .icon-folder-close-alt
+        ="/#{@stream.name}"
+      %td.flickr= @stats[:sum][:flickr]
+      %td.ganalytics= @stats[:sum][:ganalytics]
+      %td.sum= @stats[:sum][:flickr] + @stats[:sum][:ganalytics]
+      %td.total= @stats[:total]
+
+    - @stats[:all].each do |stat|
+      %tr{:class => cycle}
+        %td
+          %a{:href => photo_page(stat[:photo])}
+            %img{:width => 48, :height => 48, :src => "/#{@stream.name}/#{stat[:photo].id}/square.#{stat[:photo].ext}"}
+            %em= stat[:photo].id
+        %td.flickr= stat[:flickr]
+        %td.ganalytics= stat[:ganalytics]
+        %td.sum= stat[:sum]
+        %td.total= stat[:total]
+
+:javascript
+  $(function() {
+    index = dates.indexOf(#{params[:date].to_json});
+    next = dates[(index + 1) % dates.length];
+    prev = dates[(index - 1 + dates.length) % dates.length]; // add dates.length to deal with negative modulos
+
+    $('#details_prev').click(function() {
+      $('#details').load('?date=' + prev);
+      return false;
+    });
+
+    $('#details_next').click(function() {
+      $('#details').load('?date=' + next);
+      return false;
+    });
+
+  });

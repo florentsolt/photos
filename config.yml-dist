@@ -1,0 +1,25 @@
+---
+path: "/path/for/your/albums"
+flickr:
+  apikey: http://www.flickr.com/services/apps/create/apply
+  secret: http://www.flickr.com/services/apps/create/apply
+size: 200
+title: "Photostream"
+desc: "Some nice pictures"
+zip: false
+font: "Marvel"
+preview: "1600x1200"
+thumb: "resize"
+quality: 90
+style: "inset"
+index:
+  password: "secret"
+  sort: "date"
+ganalytics:
+  email: "example@gmail.com"
+  password: "secret"
+  profile: 42424242
+stats: false
+redis:
+  db: 0
+  sock: "/path/to/redis.sock"

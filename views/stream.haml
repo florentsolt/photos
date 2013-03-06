@@ -1,0 +1,45 @@
+:css
+  #title, #desc, #zip, .section, #goto_stats {
+    font-family: '#{@stream.font_family}', sans-serif;
+  }
+
+- if @stream.config(:zip) and not ios?
+  %a#zip{:href => "/#{@stream.name}/zip"}
+    .icon-cloud-download
+    = t.download.all
+
+- if @stream.config(:stats)
+  %a#goto_stats{:href => "/#{@stream.name}/stats"}
+    .icon-bar-chart
+    = t.stats.title
+
+#title
+  = h @stream.config(:title)
+  #desc= h @stream.config(:desc)
+
+.container<
+  - @stream.photos.each do |photo|
+    - if @stream.config(:section) and not @stream.config(:section)[photo.id].nil?
+      = "</div>"
+      .section= @stream.config(:section)[photo.id]
+      = "<div class='container'>"
+    %a.item{:name => photo.id, :href => photo_page(photo)}<
+      = thumb(photo)
+
+:javascript
+
+  $('.container').masonry({
+    itemSelector : '.item',
+    isAnimated: Modernizr.csstransitions,
+    isFitWidth: true
+  });
+
+  $(function() {
+    $("img.lazy").lazyload();
+    $('a.item').click(function() {
+      var url = window.location.href.replace(/#\d+$/, '') + '#' + this.name;
+      if (history.pushState) history.pushState({}, document.title, url);
+      return true;
+    });
+  })
+

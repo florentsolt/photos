@@ -1,0 +1,116 @@
+-# encoding:utf-8
+#photo
+  #preview
+    .wrapper
+      %img{:src => preview(@photo)}
+
+  #top.over
+    %a#back{:href => "/#{@stream.name}/##{@photo.id}"}= "« #{t.back}"
+    .download
+      - if @stream.config(:zip) and not ios?
+        .icon-cloud-download
+        %a{:href => "/#{@stream.name}/zip"}= t.download.all
+        &nbsp;—&nbsp;
+      .icon-cloud-download
+      %a{:href => "/#{@stream.name}/#{@photo.id}/original.#{@photo.ext}"}= t.download.this
+
+  #bottom.over
+    #exif= exif(@photo)
+    - if @stream.config(:stats)
+      #stats
+        #chart
+        %a#views{:href => "/#{@stream.name}/stats"}
+          = t.stats.views @stats[:total]
+    - if @stream.config(:share)
+      .share
+        %a.icon-twitter-sign{:onclick => "tw('http://twitter.com/intent/tweet?text=&url=#{CGI.escape photo_page(@photo)}'); return false;" }
+        %a.icon-facebook-sign{:onclick => "fb('http://www.facebook.com/sharer.php?u=#{CGI.escape photo_page(@photo)}'); return false;"}
+        %a.icon-pinterest-sign{:onclick => "pin('http://pinterest.com/pin/create/button/?url=#{CGI.escape photo_page(@photo)}&media=#{CGI.escape preview(@photo)}'); return false"}
+
+  #left
+    .icon-chevron-left
+  
+  #right
+    .icon-chevron-right
+
+:javascript
+  $(function(){
+
+    function loadPage(url, noPush) {
+      $(document).unbind('keydown');
+        $.ajax(url + "?ajax=1").done(function(page) {
+          if (!noPush && history.pushState) history.pushState(42, document.title, url);
+          $('#content').html(page);
+          if (typeof _gaq != "undefined") _gaq.push(['_trackPageview', window.location.pathname]);
+      });
+    }
+
+    $('html').addClass('noscroll');
+
+    $('#preview')
+      .css({visibility: 'hidden'})
+      .maximize({
+        resize: 'fill',
+        align: 'left',
+        center: 'both',
+        effect: false,
+        zoomInLimit: 1,
+      })
+      .on('imageReady', function(e, img) {
+        img.css({visibility: 'visible'});
+      })
+      .swipeEvents()
+      .bind("swipeLeft",  function(){
+        $('#preview img').animate({left: '-=100'});
+        $('#right').click();
+      })
+      .bind("swipeRight",  function(){
+        $('#preview img').animate({left: '+=100'});
+        $('#left').click();
+      });
+
+    $('#left').click(function() {
+      loadPage(#{photo_page(@photo.prev).to_json}, false);
+    })
+
+    $('#right').click(function() {
+      loadPage(#{photo_page(@photo.next).to_json}, false);
+    })
+
+    $(document).keydown(function(e) {
+      if (e.keyCode == 37) {
+        $('#left').click();
+      } else if (e.keyCode == 39) {
+        $('#right').click();
+      }
+    });
+
+    var imagePrev = $('<img />').attr('src', #{photo_page(@photo.prev).to_json} + '/preview.#{@photo.prev.ext}');
+    var imageNext = $('<img />').attr('src', #{photo_page(@photo.next).to_json} + '/preview.#{@photo.next.ext}');
+
+    window.onpopstate = function(event) {
+      // Chrome fire onpopstate on loading
+      if (event.state !== null) {
+        loadPage(document.location.pathname, true);
+      }
+    };
+  });
+
+- if @stream.config(:stats)
+  :javascript
+    $(function(){
+      dates = #{@stats[:dates].to_json};
+      values = #{[@stats[:flickr], @stats[:ganalytics]].transpose.to_json};
+      $('#chart').sparkline(values, {
+        type: 'bar',
+        stackedBarColor: ['#444', '#666'],
+        tooltipFormatter: function(sparkline, options, fields) {
+          return "<em>@ " + dates[fields[1].offset] + "</em><br>" + 
+          "<hr>" +
+          "flickr: <b>" + fields[1].value + "</b><br>" + 
+          "ganalytics: <b>" + fields[0].value + "</b>";
+        }
+      });
+    });
+
+

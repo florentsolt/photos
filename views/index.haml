@@ -1,0 +1,7 @@
+#index
+  - Model::Stream.each(Model::Stream::Index.sort) do |stream|
+    %a.stream{:href => "/#{stream.name}", :style => "background-image: url(/#{stream.name}/samples)"}
+      .title= stream.config(:title)
+      .desc= stream.config(:desc)
+      .time= time stream.times
+

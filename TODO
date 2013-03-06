@@ -1,0 +1,4 @@
+Bundler support
+Provide nginx sample config file
+Before using "jpegtran" and "pngcrush" check if they exists ("whereis" gem)
+Provide redis sample config file
