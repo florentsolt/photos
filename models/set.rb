@@ -50,7 +50,9 @@ class Set
             ['.jpg', '.jpeg', '.gif'].include?(ext)
           out = Stream::PATH / @stream.name / "zip-#{@url.host}-#{@url.path.gsub('/', '')}-#{i += 1}#{ext}"
           puts "Extract #{entry} in #{out}"
-          File.write(out, zip.read(entry), 'BINARY')
+          File.open(out, 'w:BINARY') do |fd|
+              fd.write zip.read(entry)
+          end
           @photos << "file://#{out}"
         else
           puts "Skip #{entry}"
