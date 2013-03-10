@@ -173,7 +173,7 @@ class Stream
 
     ids.each do |id,ext|
       photo = Photo.new(self, id, ext)
-      image = Sorcery.gm(photo.filename(:original))
+      image = ImageSorcery.gm(photo.filename(:original))
 
       if not File.exists? photo.filename(:resize) or force
         image.convert(photo.filename(:resize), quality: config(:quality), scale: "#{config(:size)}x")
@@ -216,7 +216,7 @@ class Stream
       end
       samples = photos.values_at(*keys)
 
-      image = Sorcery.gm(self.samples)
+      image = ImageSorcery.gm(self.samples)
       image.montage(samples.collect{|s| PATH / s.uri(:square)},
                     background: '#000000FF', tile: '5x1', geometry: '50x50',
                     borderwidth: 1, bordercolor: '#000000FF', frame: '0x0+0+0')
@@ -239,7 +239,7 @@ class Stream
         field = "#{type}.#{photo.id}"
         if not DB.hexists(key, "#{field}.x") and File.exists? filename
           puts "Sizing #{filename}"
-          image = Sorcery.gm(filename)
+          image = ImageSorcery.gm(filename)
           DB.hset key, "#{field}.x", image.dimensions[:x]
           DB.hset key, "#{field}.y", image.dimensions[:y]
         end
