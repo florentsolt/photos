@@ -20,6 +20,7 @@ How to install ?
 * Install jpegtran, pngcrush and exiftools binaries, for example: `$> apt-get install libjpeg-turbo-progs libimage-exiftool-perl pngcrush`
 * Install GraphicsMagick
 * `$> bundle install`
+* Consider install `thin`, because it's faster than `webrick`
 * Run redis-server
 * Copy `config.yml-dist` to `config.yml` and fix the file
 * `$> ruby application.rb`
