@@ -138,8 +138,6 @@ namespace :photos do
 
     desc "Rebuild"
     task :rebuild => :auth do
-      require :apps / :photos / :models
-
       # Clear all
       keys = DB.keys("stat*")
       DB.del *keys if not keys.empty?
@@ -187,8 +185,6 @@ namespace :photos do
 
     namespace :flickr do
       task :totals => :auth do
-        require :apps / :photos / :models
-
         epoch = Time.at(0).strftime('%Y-%m-%d')
 
         DB.hgetall('flickr').invert.each do |uri, data|
@@ -202,8 +198,6 @@ namespace :photos do
       end
 
       task :daily do
-        require :apps / :photos / :models
-
         puts "Crawling flickr stats..."
         @dates.each do |date|
           # TODO: support more than 1 page
@@ -267,8 +261,7 @@ namespace :photos do
       end
     end
 
-    task :totals do
-      require :apps / :photos / :models
+    task :totals => :config do
       Model::Stream.totals!
     end
 
