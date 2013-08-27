@@ -1,5 +1,5 @@
 :css
-  #title, #desc, #zip, .section, #goto_stats {
+  #title, #desc, #zip, .section {
     font-family: '#{@stream.font_family}', sans-serif;
   }
 
@@ -7,11 +7,6 @@
   %a#zip{:href => "/#{@stream.name}/zip"}
     .icon-cloud-download
     = t.download.all
-
-- if @stream.config(:stats)
-  %a#goto_stats{:href => "/#{@stream.name}/stats"}
-    .icon-bar-chart
-    = t.stats.title
 
 #title
   = h @stream.config(:title)
@@ -23,23 +18,24 @@
       = "</div>"
       .section= @stream.config(:section)[photo.id]
       = "<div class='container'>"
-    %a.item{:name => photo.id, :href => photo_page(photo)}<
-      = thumb(photo)
+    %a.item{:name => photo.id, :href => photo_page(photo)}<>= thumb(photo)
 
 :javascript
 
-  $('.container').masonry({
-    itemSelector : '.item',
-    isAnimated: Modernizr.csstransitions,
-    isFitWidth: true
-  });
-
-  $(function() {
-    $("img.lazy").lazyload();
-    $('a.item').click(function() {
-      var url = window.location.href.replace(/#\d+$/, '') + '#' + this.name;
-      if (history.pushState) history.pushState({}, document.title, url);
-      return true;
+  if (document.location.hash != '#debug') {
+    $('.container').masonry({
+      itemSelector : '.item',
+      isAnimated: Modernizr.csstransitions,
+      isFitWidth: true
     });
-  })
+
+    $(function() {
+      $("img.lazy").lazyload();
+      $('a.item').click(function() {
+        var url = window.location.href.replace(/#\d+$/, '') + '#' + this.name;
+        if (history.pushState) history.pushState({}, document.title, url);
+        return true;
+      });
+    })
+  }
 

@@ -191,18 +191,6 @@ get "/:name/zip" do
   deliver @stream.name / @stream.zip, :zip
 end
 
-get "/:name/stats" do
-  @stream = Model::Stream.new params[:name]
-  if not params[:date].nil?
-    @stats = @stream.stats(params[:date])
-    haml :stats_details, :layout => !request.xhr?
-  else
-    @viewport = 500
-    @stats = @stream.stats
-    haml :stats
-  end
-end
-
 ['/:name/', '/:name/:id/'].each do |route|
   get route do
     redirect request.path.sub(/\/$/, '')
@@ -229,7 +217,6 @@ end
     else
       halt 404 if not @stream.ids.key? params[:id]
       @photo = Model::Photo.new @stream, params[:id]
-      @stats = @photo.stats
       haml :photo, :layout => params[:ajax].nil?
     end
   end

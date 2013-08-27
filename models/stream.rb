@@ -118,22 +118,11 @@ class Stream
     urls = []
     sets.each do |set|
       set.photos.each do |photo|
-        # Cache flickr urls/ids for stats
-        if photo =~ %r|http://farm(\d+)\.staticflickr\.com/([a-f\d]+)/([a-f\d]+)_([a-f\d]+)_o\.jpg|i
-          # $1 = farm, $2 = server, $3 = id, $4 = secret
-          # files.sizes = photo id
-          DB.hset "flickr", [$1, $2, $3].join("-"), "#{@name}/#{Photo::FORMAT % files.size}"
-        end
-
         files << basename = File.basename(photo)
         filename = "#{@name}-#{Photo::FORMAT % files.index(basename)}.jpg"
 
         photo = URI.parse photo
-        if not File.exists? PATH / @name / filename
-          urls << photo
-        elsif photo.scheme == 'file'
-          system "rm '#{photo.path}'"
-        end
+        urls << photo if not File.exists? PATH / @name / filename
       end
     end
 
@@ -144,12 +133,23 @@ class Stream
       DB.zadd "photos.#{@name}", i, (Photo::FORMAT % i) + File.extname(files[i])
     end
 
+    # new photos ?
     if not urls.empty?
       urls.each do |url|
         if url.scheme == 'file'
           filename = "#{@name}-#{Photo::FORMAT % files.index(File.basename(url.to_s))}#{File.extname(url.to_s)}"
-          puts "Move #{url.path} in #{filename}"
-          system "mv '#{url.path}' '#{PATH / @name / filename}'"
+
+          File.unlink(PATH / @name / filename) if File.exists?(PATH / @name / filename)
+
+          # if files are in the same dir, then rename
+          if File.dirname(url.path) == PATH / @name
+            puts "Move #{url.path} in #{filename}"
+            File.rename url.path, PATH / @name / filename
+          else
+            # else only do a symlink
+            puts "Symlink #{url.path} in #{PATH / @name}"
+            File.symlink url.path, PATH / @name / filename
+          end
         else
           http = Curl::Easy.perform(url.to_s) do |curl|
             curl.follow_location = true

@@ -32,6 +32,7 @@ body.inset
 
     img
       border-radius: 4px
+      vertical-align: bottom
 
 body.polaroid
   background-color: #444
@@ -70,7 +71,7 @@ body.polaroid
   text-align: center
   padding: 1em
 
-#zip, #goto_stats
+#zip
   font-size: 12pt
   font-style: italic
   text-align: center
@@ -86,9 +87,6 @@ body.polaroid
     display: block
     font-size: 36px
     color: #666
-
-#goto_stats
-  right: 10em
 
 .container
   margin: 0 auto
@@ -128,18 +126,6 @@ body.polaroid
     bottom: 0px
     height: 20px
     padding: 2px
-
-    #stats
-      position: absolute
-      top: 4px
-      left: 45%
-      width: 200px
-
-      #chart
-        float: left
-      
-      #views
-        float: right
 
   #left, #right
     position: absolute
@@ -331,100 +317,6 @@ body.polaroid
     line-height: 0px
     height: 1px
     display: block
-
-#stats-details
-  #chart
-    margin: auto
-    width: 450px
-    margin: 2em auto
-
-  #trends
-    margin: auto
-    width: 450px
-    margin: 2em auto
-    height: 1em
-
-    .trend
-      width: 112px
-      float: left
-      text-align: center
-
-      em
-        color: #666
-        font-size: 14px
-
-  table
-    margin: auto
-    width: 450px
-    border-spacing: 0px
-
-    .odd
-      background-color: #222
-
-    td, th
-      padding: 0px 5px 0px 0px
-      height: 48px
-
-    th
-      color: #666
-      font-style: italic
-      font-weight: normal
-      text-align: left
-      vertical-align: middle
-      line-height: 30px
-
-      a
-        color: #888
-        text-decoration: none
-        font-style: normal
-        font-weight: bold
-        padding: 0px 10px
-
-      .icon
-        font-size: 12px
-        text-align: center
-        float: right
-        width: 40px
-
-        .icon-circle
-          display: inline-block
-
-    th.title
-      text-align: center
-      padding-bottom: 1em
-
-    td
-
-      a
-        text-decoration: none
-        color: #666
-
-      img
-        vertical-align: middle
-        margin-right: 10px
-
-    .grand_total
-      font-style: italic
-      color: #666
-
-      .icon-folder-close-alt
-        font-size: 28px
-        text-align: center
-        display: inline-block
-        width: 48px
-        margin-right: 10px
-        vertical-align: middle
-
-    .flickr, .ganalytics, .sum, .total
-      width: 40px
-      line-height: 1.2em
-      text-align: right
-
-    td.flickr, td.ganalytics, td.sum, th.sum
-      padding-right: 1.5em
-
-    .total
-      color: #666
 
 $fontAwesomePath: "/font"
 @import "font-awesome"

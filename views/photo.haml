@@ -16,11 +16,6 @@
 
   #bottom.over
     #exif= exif(@photo)
-    - if @stream.config(:stats)
-      #stats
-        #chart
-        %a#views{:href => "/#{@stream.name}/stats"}
-          = t.stats.views @stats[:total]
     - if @stream.config(:share)
       .share
         %a.icon-twitter-sign{:onclick => "tw('http://twitter.com/intent/tweet?text=&url=#{CGI.escape photo_page(@photo)}'); return false;" }
@@ -95,22 +90,4 @@
       }
     };
   });
-
-- if @stream.config(:stats)
-  :javascript
-    $(function(){
-      dates = #{@stats[:dates].to_json};
-      values = #{[@stats[:flickr], @stats[:ganalytics]].transpose.to_json};
-      $('#chart').sparkline(values, {
-        type: 'bar',
-        stackedBarColor: ['#444', '#666'],
-        tooltipFormatter: function(sparkline, options, fields) {
-          return "<em>@ " + dates[fields[1].offset] + "</em><br>" + 
-          "<hr>" +
-          "flickr: <b>" + fields[1].value + "</b><br>" + 
-          "ganalytics: <b>" + fields[0].value + "</b>";
-        }
-      });
-    });
-
 

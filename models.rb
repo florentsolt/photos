@@ -9,7 +9,7 @@ module Model
   CONFIG = YAML.load_file(__dir__ / 'config.yml')
 end
 
-['stream', 'set', 'photo', 'stats'].each do |model|
+['stream', 'set', 'photo'].each do |model|
     require File.join(__dir__, 'models', model)
 end
 

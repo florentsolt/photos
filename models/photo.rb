@@ -5,13 +5,6 @@ class Photo
 
   class << self
 
-    def from_flickr(farm, server, id)
-      uri = DB.hget("flickr", [farm, server, id].join("-"))
-      return nil if uri.nil?
-      name, id = uri.split("/")
-      Photo.new(Stream.new(name), id)
-    end
-    
     def from_uri(uri)
       uri.strip!
       uri = uri[1..-1] if uri[0] == '/'
@@ -103,35 +96,6 @@ class Photo
   def time
     return @time if not @time.nil?
     @time = Time.at DB.hget("exif.#{@stream.name}.#{@id}", "time").to_i
-  end
-
-  def stat!(source, date, views)
-    if views.to_i > 0 and [:flickr, :ganalytics].include? source
-      # because this function is used with 0 to rebuild all totals
-      key = "stat.#{source}.#{@stream.name}.#{@id}"
-      DB.hset key, date, views.to_i
-    end
-
-    # Calculate photo total
-    total = []
-    total += DB.hvals("stat.flickr.#{@stream.name}.#{@id}")
-    total += DB.hvals("stat.ganalytics.#{@stream.name}.#{@id}")
-    total = total.inject{|sum, n| sum = sum.to_i + n.to_i}.to_i
-    DB.hset "stat.total", "#{@stream.name}.#{@id}", total
-  end
-
-  def stats
-    dates = 1.upto(20).collect do |i|
-      (Time.now - 3600 * 24 * i).strftime("%Y-%m-%d")
-    end.reverse
-    result = {:flickr => [], :ganalytics => []}
-    result.keys.each do |source|
-      result[source] = DB.hmget("stat.#{source}.#{@stream.name}.#{@id}", *dates)
-      result[source].collect!{|value| value.to_i }
-    end
-    result[:total] = DB.hget("stat.total", "#{@stream.name}.#{@id}").to_i
-    result[:dates] = dates
-    result
   end
 
 end

@@ -85,6 +85,10 @@ class Set
         end
       end
 
+    when "local"
+      photo = Photo.new Stream.new(@url.host), @url.path[1..-1]
+      @photos << "file://#{photo.filename(:original)}"
+
     else
       throw "Unkown set type #{@url}"
     end

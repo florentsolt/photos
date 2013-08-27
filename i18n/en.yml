@@ -5,12 +5,4 @@ download:
 time:
   two: "%1<br>and %2"
   interval: "from %1<br>to %2"
-stats: 
-  title: Stats
-  total: total
-  all: all time
-  week: 
-    number: "week %1"
-    current: "current"
-  views: "%1 views"
 
