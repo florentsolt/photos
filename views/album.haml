@@ -1,22 +1,22 @@
 :css
   #title, #desc, #zip, .section {
-    font-family: '#{@stream.font_family}', sans-serif;
+    font-family: '#{@album.font_family}', sans-serif;
   }
 
-- if @stream.config(:zip) and not ios?
-  %a#zip{:href => "/#{@stream.name}/zip"}
+- if @album.config(:zip) and not ios?
+  %a#zip{:href => "/#{@album.name}/zip"}
     .icon-cloud-download
     = t.download.all
 
 #title
-  = h @stream.config(:title)
-  #desc= h @stream.config(:desc)
+  = h @album.config(:title)
+  #desc= h @album.config(:desc)
 
 .container<
-  - @stream.photos.each do |photo|
-    - if @stream.config(:section) and not @stream.config(:section)[photo.id].nil?
+  - @photos.each do |photo|
+    - if @album.config(:section) and not @album.config(:section)[photo.id].nil?
       = "</div>"
-      .section= @stream.config(:section)[photo.id]
+      .section= @album.config(:section)[photo.id]
       = "<div class='container'>"
     %a.item{:name => photo.id, :href => photo_page(photo)}<>= thumb(photo)
 

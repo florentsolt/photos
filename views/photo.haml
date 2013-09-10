@@ -5,18 +5,18 @@
       %img{:src => preview(@photo)}
 
   #top.over
-    %a#back{:href => "/#{@stream.name}/##{@photo.id}"}= "« #{t.back}"
+    %a#back{:href => "/#{@album.name}/##{@photo.id}"}= "« #{t.back}"
     .download
-      - if @stream.config(:zip) and not ios?
+      - if @album.config(:zip) and not ios?
         .icon-cloud-download
-        %a{:href => "/#{@stream.name}/zip"}= t.download.all
+        %a{:href => "/#{@album.name}/zip"}= t.download.all
         &nbsp;—&nbsp;
       .icon-cloud-download
-      %a{:href => "/#{@stream.name}/#{@photo.id}/original.#{@photo.ext}"}= t.download.this
+      %a{:href => "/#{@album.name}/#{@photo.id}/original.#{@photo.ext}"}= t.download.this
 
   #bottom.over
     #exif= exif(@photo)
-    - if @stream.config(:share)
+    - if @album.config(:share)
       .share
         %a.icon-twitter-sign{:onclick => "tw('http://twitter.com/intent/tweet?text=&url=#{CGI.escape photo_page(@photo)}'); return false;" }
         %a.icon-facebook-sign{:onclick => "fb('http://www.facebook.com/sharer.php?u=#{CGI.escape photo_page(@photo)}'); return false;"}
@@ -65,11 +65,11 @@
       });
 
     $('#left').click(function() {
-      loadPage(#{photo_page(@photo.prev).to_json}, false);
+      loadPage(#{photo_page(@prev).to_json}, false);
     })
 
     $('#right').click(function() {
-      loadPage(#{photo_page(@photo.next).to_json}, false);
+      loadPage(#{photo_page(@next).to_json}, false);
     })
 
     $(document).keydown(function(e) {
@@ -80,8 +80,8 @@
       }
     });
 
-    var imagePrev = $('<img />').attr('src', #{photo_page(@photo.prev).to_json} + '/preview.#{@photo.prev.ext}');
-    var imageNext = $('<img />').attr('src', #{photo_page(@photo.next).to_json} + '/preview.#{@photo.next.ext}');
+    var imagePrev = $('<img />').attr('src', #{photo_page(@prev).to_json} + '/preview.#{@prev.ext}');
+    var imageNext = $('<img />').attr('src', #{photo_page(@next).to_json} + '/preview.#{@next.ext}');
 
     window.onpopstate = function(event) {
       // Chrome fire onpopstate on loading

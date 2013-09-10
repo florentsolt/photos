@@ -1,10 +1,10 @@
 require "digest/sha1"
 
-module Model
+module Lib
 class Set
 
-  def initialize(stream, url)
-    @stream = stream
+  def initialize(album, url)
+    @album = album
     @url = URI.parse url
   end
 
@@ -12,20 +12,32 @@ class Set
     @url.scheme
   end
 
+  def flickr?
+    ['flickr', 'gp'].include? type
+  end
+
+  def zip?
+    ['zip', 'zip+scp', 'zip+http'].include? type
+  end
+
   def photos
-    @photos = []
+    urls = []
 
     case type
     when "flickr"
       photos = flickr.photosets.getPhotos(:photoset_id => @url.host, :extras => 'url_o')
       puts "Found #{photos.photo.count} photos in set #{@url.host}"
-      @photos += photos.photo.collect(&:url_o)
+      urls += photos.photo.collect(&:url_o)
 
     when "zip", "zip+http", "zip+scp"
 
       case type
       when "zip"
-        filename = @url.path
+        if @url.path.empty?
+          filename = @album.config(:path) / @album.name / @url.host
+        else
+          filename = @url.path
+        end
         throw "File does not exists #{@url}" if not File.exists? filename
       when "zip+http"
         filename = "/tmp/photos-#{Digest::SHA1.hexdigest(@url.to_s)}.zip"
@@ -39,8 +51,8 @@ class Set
         system "scp '#{@url.user}@#{@url.host}:#{@url.path}' '#{filename}'" if not File.exists? filename
       end
 
-      require 'zip/zip'
-      zip = Zip::ZipFile.open(filename)
+      require 'zip'
+      zip = Zip::File.open(filename)
       i = 0
       zip.map.each do |entry|
         ext = File.extname(entry.to_s).downcase
@@ -48,12 +60,12 @@ class Set
             not entry.to_s.include?('__MACOSX') and 
             not File.basename(entry.to_s)[0] == '.' and
             ['.jpg', '.jpeg', '.gif'].include?(ext)
-          out = Stream::PATH / @stream.name / "zip-#{@url.host}-#{@url.path.gsub('/', '')}-#{i += 1}#{ext}"
-          puts "Extract #{entry} in #{out}"
+          out = @album.config(:path) / @album.name / "zip-#{[@url.host, *@url.path.split('/')].join('-')}-#{i += 1}#{ext}"
+          puts "Extract #{entry} in #{File.basename(out)}"
           File.open(out, 'w:BINARY') do |fd|
               fd.write zip.read(entry)
           end
-          @photos << "file://#{out}"
+          urls << "file://#{out}"
         else
           puts "Skip #{entry}"
         end
@@ -80,19 +92,19 @@ class Set
         original = Nokogiri::HTML(http.body_str)
         original.css('#all-sizes-header a').each do |link|
           if link.content =~ /Download/i
-            @photos << link['href']
+            urls << link['href']
           end
         end
       end
 
     when "local"
-      photo = Photo.new Stream.new(@url.host), @url.path[1..-1]
-      @photos << "file://#{photo.filename(:original)}"
+      photo = Album.load(@url.host).photos[@url.path[1..-1]]
+      urls << "file://#{photo.filename(:original)}"
 
     else
       throw "Unkown set type #{@url}"
     end
-    @photos
+    urls
   end
 
 end

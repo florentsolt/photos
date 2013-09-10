@@ -10,8 +10,8 @@
 
 path: "/path/for/your/albums"
 flickr:
-  apikey: http://www.flickr.com/services/apps/create/apply
-  secret: http://www.flickr.com/services/apps/create/apply
+  api_key: http://www.flickr.com/services/apps/create/apply
+  shared_secret: http://www.flickr.com/services/apps/create/apply
 size: 200
 title: "Photostream"
 desc: "Some nice pictures"

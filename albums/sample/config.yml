@@ -1,29 +1,32 @@
-# This file describe a photo stream.
-# It should be put in an empty folder
+# This file describe a photo album.
+# It should be put in an empty folder.
 # Then run: rake photos:all[name-of-the-folder]
 
 # The source of the pictures
 # It can be on Flickr, with xxx = the set ID
-set: flickr://xxx
+# set: flickr://xxx
 # It can be a local zip file 
-set: zip:///path/to/file.zip
+# set: zip:///path/to/file.zip
 # It can be a remote zip file, via scp
-set: zip+scp://user@host/path/to/file.zip
+# set: zip+scp://user@host/path/to/file.zip
 # It can be a remote zip file, via http
-set: zip+http://example.com/path/to/file.zip
+# set: zip+http://example.com/path/to/file.zip
 # Or an array of many urls
+# set:
+#   - flickr://xxx
+#   - zip+scp://user@host/path/to/file.zip
+
 set:
-  - flickr://xxx
-  - zip+scp://user@host/path/to/file.zip
+  - zip://sample.zip
 
 # The size of the thumbnails
 size: 200
 
-# Title of the photo stream
-title: Pictures of the day
+# Title of the photo album
+title: Sample
 
-# Description of the photo stream
-desc: Random photos from my trips and walks
+# Description of the photo album
+desc: Random photos
 
 # Generate a zip file with all the picture ?
 zip: true

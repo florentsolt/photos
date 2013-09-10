@@ -1,7 +1,7 @@
 #index
-  - Model::Stream.each(Model::Stream::Index.sort) do |stream|
-    %a.stream{:href => "/#{stream.name}", :style => "background-image: url(/#{stream.name}/samples)"}
-      .title= stream.config(:title)
-      .desc= stream.config(:desc)
-      .time= time stream.times
+  - Lib::Index.albums.each do |album|
+    %a.album{:href => "/#{album.name}", :style => "background-image: url(/#{album.name}/samples)"}
+      .title= album.config(:title)
+      .desc= album.config(:desc)
+      .time= time album.times
 
