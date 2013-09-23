@@ -14,6 +14,11 @@ set :sass, {
   :style => settings.production? ? :compressed : :expanded
 }
 
+configure :production do
+  # preload albums
+  Lib::Index.albums
+end
+
 helpers do
 
   include Rack::Utils
@@ -93,7 +98,7 @@ helpers do
     if times.max - times.min < 3600*24 # all photos in a day
       l Time.at(times.max).to_date, :human
     elsif times.max - times.min < 3600*48 # all photos in two day
-      t.date.two l(Time.at(times.min).to_date, :human), l(Time.at(times.max).to_date, :human)
+      t.time.two l(Time.at(times.min).to_date, :human), l(Time.at(times.max).to_date, :human)
     else
       t.time.interval l(Time.at(times.min).to_date, :human), l(Time.at(times.max).to_date, :human)
     end
@@ -231,3 +236,4 @@ end
     end
   end
 end
+

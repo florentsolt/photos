@@ -124,9 +124,9 @@ module Lib
             File.unlink(config(:path) / @name / filename) if File.exists?(config(:path) / @name / filename)
 
             # if files are in the same dir, then rename
-            if File.dirname(url.host + url.path) == config(:path) / @name
+            if File.dirname("#{url.host}#{url.path}") == config(:path) / @name
               puts "Move #{File.basename(url.path)} in #{filename}"
-              File.rename url.host + url.path, config(:path) / @name / filename
+              File.rename "#{url.host}#{url.path}", config(:path) / @name / filename
             else
               # else only do a symlink
               puts "Symlink #{url.path} in #{filename}"

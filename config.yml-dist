@@ -28,7 +28,3 @@ ganalytics:
   email: "example@gmail.com"
   password: "secret"
   profile: 42424242
-stats: false
-redis:
-  db: 0
-  sock: "/path/to/redis.sock"

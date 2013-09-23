@@ -12,7 +12,7 @@
   = h @album.config(:title)
   #desc= h @album.config(:desc)
 
-.container<
+#container<
   - @photos.each do |photo|
     - if @album.config(:section) and not @album.config(:section)[photo.id].nil?
       = "</div>"
@@ -23,10 +23,13 @@
 :javascript
 
   if (document.location.hash != '#debug') {
-    $('.container').masonry({
+    var container = document.querySelector('#container');
+    new Masonry(container, {
       itemSelector : '.item',
       isAnimated: Modernizr.csstransitions,
-      isFitWidth: true
+      isFitWidth: true,
+      gutter: 20,
+      columnWidth: #{@album.config(:size)}
     });
 
     $(function() {
