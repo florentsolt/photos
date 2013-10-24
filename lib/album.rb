@@ -103,7 +103,7 @@ module Lib
           elsif url.scheme == 'file' and set.zip?
             # if it's not a new file, so it will not be moved or symlinked
             # in case of a zip, remove temp file
-            File.unlink(url.host + url.path)
+            File.unlink(url.host.to_s + url.path.to_s)
           end
         end
       end
