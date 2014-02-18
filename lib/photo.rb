@@ -110,7 +110,7 @@ class Photo
     image = ImageSorcery.gm(filename(:original))
 
     if not File.exists? filename(:resize) or force
-      image.convert(filename(:resize), quality: quality, scale: resize)
+      image.convert(filename(:resize), quality: quality, thumbnail: "#{resize}x")
       puts "Create #{File.basename(filename(:resize))}"
     end
 
