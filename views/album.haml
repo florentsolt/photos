@@ -3,7 +3,14 @@
     font-family: '#{@album.font_family}', sans-serif;
   }
 
-- if @album.config(:zip) and not ios?
+  @media only screen and (min-device-width : 320px) and (max-device-width : 568px) {
+    /* iPhone */
+    #content {
+      width: #{@album.config(:size) + 40}px;
+    }
+  }
+
+- if @album.config(:zip) and not mobile?
   %a#zip{:href => "/#{@album.name}/zip"}
     .icon-cloud-download
     = t.download.all
@@ -12,7 +19,7 @@
   = h @album.config(:title)
   #desc= h @album.config(:desc)
 
-#container<
+.container
   - @photos.each do |photo|
     - if @album.config(:section) and not @album.config(:section)[photo.id].nil?
       = "</div>"
@@ -24,13 +31,14 @@
 
   if (document.location.hash != '#debug') {
     var container = document.querySelector('#container');
-    new Masonry(container, {
-      itemSelector : '.item',
-      isAnimated: Modernizr.csstransitions,
-      isFitWidth: true,
-      gutter: 20,
-      columnWidth: #{@album.config(:size)}
-    });
+    if (navigator.platform.indexOf("iPhone") == -1) {
+      $('.container').masonry({
+        itemSelector : '.item',
+        isFitWidth: true,
+        gutter: 20,
+        columnWidth: #{@album.config(:size)}
+      });
+    }
 
     $(function() {
       $("img.lazy").lazyload();

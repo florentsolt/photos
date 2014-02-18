@@ -17,5 +17,8 @@ module Optimize
     puts "Optimize PNG #{File.basename(filename)}"
     system "pngcrush -q '#{filename}' '#{filename}.new'; mv '#{filename}.new' '#{filename}'"
   end
+
+  def self.gif(filename)
+  end
 end
 end

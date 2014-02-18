@@ -5,7 +5,7 @@
       %title= @album.config(:title)
       %link{:href => @album.font_href, :rel => 'stylesheet', :type => 'text/css'}
     %meta{'http-equiv' => 'content-type', :content => 'text/html; charset=utf-8'}
-    %meta{:name => 'viewport', :content => "width=#{@viewport || 1200}, user-scalable=no"}
+    %meta{:name => 'viewport', :content => "width=device-width, user-scalable=no"}
     %script{:type => 'text/javascript', :src => "/js?#{Time.now.strftime "%Y%m%d"}"}
     %link{:href => '/favicon.ico', :rel => 'shortcut icon'}
     %link{:rel => "apple-touch-icon", :href => "favicon.png"}
@@ -27,7 +27,7 @@
       %meta{:name => "twitter:image:width", :content => @photo.size(:preview).x}
       %meta{:name => "twitter:image:height", :content => @photo.size(:preview).y}
 
-  %body{:class => @album.nil? && '' || @album.config(:style)}
+  %body
 
     #content
       = yield

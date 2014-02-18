@@ -3,12 +3,14 @@ module Lib
 
     @@cache = {}
 
+    DUMP_FILE = "album.msh"
+
     def self.load(name)
-      filename = Config.default(:path) / name / 'album.yml'
+      filename = Config.default(:path) / name / DUMP_FILE
       return @@cache[name] if @@cache.key? name
 
       if File.exists? filename
-        @@cache[name] = YAML.load(File.read(filename))
+        @@cache[name] = Marshal.load(File.read(filename))
       else
         @@cache[name] = Album.new(name)
       end
@@ -22,8 +24,8 @@ module Lib
     end
 
     def dump
-      File.open(config(:path) / @name / 'album.yml', 'w') do |fd|
-        fd.write YAML.dump(self)
+      File.open(config(:path) / @name / DUMP_FILE, 'w:BINARY') do |fd|
+        fd.write Marshal.dump(self)
       end
     end
 
@@ -234,7 +236,7 @@ module Lib
     end
 
     def clear!(keep_originals = false)
-      ["album.yml", "archive.zip", "samples.png"].each do |file|
+      [DUMP_FILE, "archive.zip", "samples.png"].each do |file|
         if File.exists? config(:path) / @name / file
           puts "Delete #{file}"
           File.unlink config(:path) / @name / file

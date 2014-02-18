@@ -50,19 +50,19 @@ helpers do
     end
   end
 
-  def ios?
-    request.user_agent =~ /ipad|iphone/i
+  def mobile?
+    request.user_agent =~ /ipad|iphone|mobile|android/i
   end
 
   def deliver(file, type)
     if settings.production?
       file = "/direct/" + file
       content_type :jpeg
-      headers "Content-Disposition" => "attachment; filename=#{File.basename(file)}" if not ios?
+      headers "Content-Disposition" => "attachment; filename=#{File.basename(file)}" if not mobile?
       headers "X-Accel-Redirect" => file
     else
       etag "#{file}@#{File.mtime(Lib::Config.default(:path) / file)}"
-      if ios?
+      if mobile?
         send_file Lib::Config.default(:path) / file, :type => type
       else
         send_file Lib::Config.default(:path) / file, :type => type, :filename => File.basename(file)
@@ -114,7 +114,11 @@ helpers do
   end
 
   def photo_page(photo)
-    "#{request.scheme}://#{domain}/#{@album.name}/#{photo.id}"
+    if mobile?
+      preview(photo)
+    else
+      "#{request.scheme}://#{domain}/#{@album.name}/#{photo.id}"
+    end
   end
 
   def preview(photo)

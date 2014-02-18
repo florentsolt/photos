@@ -51,8 +51,8 @@ class Set
         system "scp '#{@url.user}@#{@url.host}:#{@url.path}' '#{filename}'" if not File.exists? filename
       end
 
-      require 'zip/zip'
-      zip = Zip::ZipFile.open(filename)
+      require 'zip'
+      zip = Zip::File.open(filename)
       i = 0
       zip.map.each do |entry|
         ext = File.extname(entry.to_s).downcase

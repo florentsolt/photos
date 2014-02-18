@@ -3,8 +3,8 @@ html, body
   padding: 0px
 
 body
-  background-color: black
   color: white
+  background-color: #292929
 
 .noscroll
   overflow: hidden
@@ -18,43 +18,16 @@ body
   float: left
   background-repeat: no-repeat
   background-position: center
+  background-size: 100%
   margin: 1px
   outline: none
+  box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.35),inset 0px 1px 0px 0px rgba(255, 255, 255, 0.2)
+  border-radius: 4px
+  margin-bottom: 20px
 
-body.inset
-  background-color: #292929
-
-  .item
-    box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.35),inset 0px 1px 0px 0px rgba(255, 255, 255, 0.2)
+  img
     border-radius: 4px
-    margin-bottom: 20px
-    background-size: 100%
-
-    img
-      border-radius: 4px
-      vertical-align: bottom
-
-body.polaroid
-  background-color: #444
-
-  .item
-    padding: 10px 10px 45px 10px !important
-    background-color: #eee
-    box-shadow: 0px 2px 15px #333
-    margin: 10px
-    -webkit-transform: rotate(-4deg)
-    -moz-transform: rotate(-4deg)
-    background-position: center 10px
-
-  #container
-  
-    .item:nth-child(even)
-      -webkit-transform: rotate(4deg)
-      -moz-transform: rotate(4deg)
-
-    .item:nth-child(3n)
-      -webkit-transform: none
-      -moz-transform: none
+    vertical-align: bottom
 
 #title, #desc
   font-size: 30pt
@@ -88,7 +61,7 @@ body.polaroid
     font-size: 36px
     color: #666
 
-#container
+.container
   margin: 0 auto
 
 #photo
@@ -304,19 +277,53 @@ body.polaroid
       font-family: sans-serif
       font-style: italic
 
-#jqstooltip
-  border: 1px solid #444
-  
-  hr
-    margin: 4px 0px
-    padding: 0px
-    border-bottom: 1px dotted #777
-    border-top: 0px
-    border-left: 0px
-    border-right: 0px
-    line-height: 0px
-    height: 1px
-    display: block
-
 $fontAwesomePath: "/font"
 @import "font-awesome"
+
+@media only screen and (min-device-width : 320px) and (max-device-width : 568px)
+  /* iPhone */
+
+  #title, #desc
+    width: 100%
+    margin: 0px
+
+  .container
+    padding: 20px
+
+    .item
+      margin: 20px auto
+      text-align: center
+      float: none
+      background-color: transparent
+      box-shadow: none
+
+      img
+        box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.35),inset 0px 1px 0px 0px rgba(255, 255, 255, 0.2)
+        
+  #index
+    .album
+      width: 260px
+      height: 52px
+      padding-top: 52px
+      background-position: left top
+
+      .title, .desc
+        margin-left: 0px
+        white-space: nowrap
+        width: 240px
+        padding: 0px 10px
+        text-overflow: ellipsis
+        overflow: hidden
+
+      .time
+        display: none
+
+@media only screen and (min-device-width : 768px) and (max-device-width : 1024px)
+  /* iPad */
+  #index
+    .album
+      width: 80% !important
+
+    .time
+      display: none
+

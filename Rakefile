@@ -125,9 +125,16 @@ namespace :photos do
     @album.zip!
   end
 
+  desc "Rebuild metadatas"
+  task :meta, [:name] => :config do
+    @album.scan!
+    @album.sizes!
+    @album.exif!
+    @album.times!
+  end
+
   desc "Scan"
   task :scan, [:name] => :config do
-    @album.scan!
     @album.scan!
     @album.thumbs!
     @album.samples!
