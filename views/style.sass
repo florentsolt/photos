@@ -73,23 +73,27 @@ body
       img
         box-shadow: 0px 4px 8px 0px rgba(0, 0, 0, 0.35)
         border: none
-        margin: 40px
+        margin: 60px
 
   #top
     position: absolute
     top: 0px
-    bottom: auto
+    height: 20px
     z-index: 200000
+
+    #back
+      position: absolute
+      left: 0px
 
     a:hover
       color: white
 
     .download
-      float: right
+      position: absolute
+      right: 0px
 
       .icon-cloud-download
         font-size: 14px
-
 
   #bottom
     position: absolute
@@ -128,11 +132,26 @@ body
   #right
     right: 20px
 
+body.fullscreen
+
+  #photo
+
+    #preview
+
+      .wrapper
+        
+        img.fullscreen
+          margin: 0px
+          box-shadow: none
+
+  #top, #bottom
+    display: none
+
 .over
   position: absolute
-  top: 0
-  left: 0
-  right: 0px
+  top: 0px
+  left: 1em
+  right: 1em
   text-align: left
   color: #aaa
   font-family: Georgia, serif
@@ -146,7 +165,7 @@ body
 
 .share
   position: absolute
-  right: 6px
+  right: 0px
   top: 2px
 
   a

@@ -12,7 +12,7 @@
         %a{:href => "/#{@album.name}/zip"}= t.download.all
         &nbsp;—&nbsp;
       .icon-cloud-download
-      %a{:href => "/#{@album.name}/#{@photo.id}/original.#{@photo.ext}"}= t.download.this
+      %a{:href => "/download/#{@album.name}/#{@photo.id}/original.#{@photo.ext}"}= t.download.this
 
   #bottom.over
     #exif= exif(@photo)
@@ -31,8 +31,33 @@
       .icon-chevron-right
 
 :javascript
-  $(function(){
 
+  function fullscreen() {
+    var e = document.body;
+    if ($(e).hasClass('fullscreen')) {
+      $(e).removeClass('fullscreen');
+      if(document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if(document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if(document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      }
+    } else {
+      $(e).addClass('fullscreen');
+      if(e.requestFullscreen) {
+        e.requestFullscreen();
+      } else if(e.mozRequestFullScreen) {
+        e.mozRequestFullScreen();
+      } else if(e.webkitRequestFullscreen) {
+        e.webkitRequestFullscreen();
+      } else if(e.msRequestFullscreen) {
+        e.msRequestFullscreen();
+      }
+    }
+  }
+
+  $(function(){
     function loadPage(url, noPush) {
       $(document).unbind('keydown');
         $.ajax(url + "?ajax=1").done(function(page) {
@@ -82,6 +107,8 @@
         left();
       } else if (e.keyCode == 39) {
         right();
+      } else if (e.keyCode == 70 || e.keyCode == 76) { // F or L
+        fullscreen();
       }
     });
 

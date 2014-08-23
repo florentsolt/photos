@@ -24,10 +24,6 @@ helpers do
   include Rack::Utils
   alias_method :h, :escape_html
 
-  def cycle
-    %w{even odd}[@_cycle = ((@_cycle || -1) + 1) % 2]
-  end
-
   def password?
     if @album.nil?
       if Lib::Index.protected?
@@ -54,11 +50,13 @@ helpers do
     request.user_agent =~ /ipad|iphone|mobile|android/i
   end
 
-  def deliver(file, type)
+  def deliver(file, type, download = false)
+    if download and not mobile?
+      headers "Content-Disposition" => "attachment; filename=#{File.basename(file)}"
+    end
     if settings.production?
       file = "/direct/" + file
-      content_type :jpeg
-      headers "Content-Disposition" => "attachment; filename=#{File.basename(file)}" if not mobile?
+      content_type type
       headers "X-Accel-Redirect" => file
     else
       etag "#{file}@#{File.mtime(Lib::Config.default(:path) / file)}"
@@ -166,7 +164,9 @@ end
 
 get '/js' do
   if not settings.production? or $JS.nil?
-    $JS = Dir[File.dirname(__FILE__) / :public / :js / '*.js'].sort.collect do |js|
+    $JS = Dir[File.dirname(__FILE__) / :public / :js / '*.js'].sort do |a,b|
+        File.basename(a).to_i <=> File.basename(b).to_i
+    end.collect do |js|
       "#{File.read(js)}\n"
     end.join
   end
@@ -178,12 +178,21 @@ get '/js' do
   $JS
 end
 
+
+
 [:square, :resize, :preview, :original].each do |type|
   get "/:name/:id/#{type}.:ext" do
     @album = Lib::Album.load params[:name]
     password?
     @photo = @album.photos[params[:id]]
     deliver @photo.uri(type), @photo.ext
+  end
+
+  get "/download/:name/:id/#{type}.:ext" do
+    @album = Lib::Album.load params[:name]
+    password?
+    @photo = @album.photos[params[:id]]
+    deliver @photo.uri(type), @photo.ext, true
   end
 end
 
@@ -196,7 +205,7 @@ end
 get "/:name/zip" do
   @album = Lib::Album.load params[:name]
   password?
-  deliver @album.name / @album.zip, :zip
+  deliver @album.name / @album.zip, :zip, true
 end
 
 ['/:name/', '/:name/:id/'].each do |route|
