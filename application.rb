@@ -6,6 +6,9 @@ require 'sinatra/r18n'
 require 'haml'
 require 'sass'
 require 'digest/sha1'
+require 'openssl'
+require 'digest/sha1'
+require 'base64'
 
 require File.join(__dir__, 'lib')
 
@@ -23,6 +26,25 @@ helpers do
 
   include Rack::Utils
   alias_method :h, :escape_html
+
+  def crypt(path)
+    cipher = OpenSSL::Cipher::Cipher.new("aes-256-cbc").encrypt
+    iv = cipher.random_iv
+    cipher.key = Digest::SHA1.hexdigest("yourpass")
+    cipher.iv = iv
+    encrypted = cipher.update('thailande-2014/00545')
+    encrypted << cipher.final
+    Base64.urlsafe_encode64(iv+encrypted)
+  end
+
+  def decrypt(token)
+    token = Base64.urlsafe_decode64(token)
+    cipher = OpenSSL::Cipher::Cipher.new("aes-256-cbc").decrypt
+    cipher.key = Digest::SHA1.hexdigest("yourpass")
+    cipher.iv = token[0..15]
+    result = cipher.update(token[16..-1])
+    result << cipher.final
+  end
 
   def password?
     if @album.nil?
@@ -54,13 +76,13 @@ helpers do
     if download and not mobile?
       headers "Content-Disposition" => "attachment; filename=#{File.basename(file)}"
     end
+    content_type type
     if settings.production?
       file = "/direct/" + file
-      content_type type
       headers "X-Accel-Redirect" => file
     else
       etag "#{file}@#{File.mtime(Lib::Config.default(:path) / file)}"
-      if mobile?
+      if mobile? or not download
         send_file Lib::Config.default(:path) / file, :type => type
       else
         send_file Lib::Config.default(:path) / file, :type => type, :filename => File.basename(file)
@@ -178,7 +200,9 @@ get '/js' do
   $JS
 end
 
-
+get '/link/:token/:type.:ext' do 
+  call env.merge("PATH_INFO" => "/#{decrypt(params[:token])}/#{params[:type]}.#{params[:ext]}")
+end
 
 [:square, :resize, :preview, :original].each do |type|
   get "/:name/:id/#{type}.:ext" do
@@ -208,12 +232,6 @@ get "/:name/zip" do
   deliver @album.name / @album.zip, :zip, true
 end
 
-['/:name/', '/:name/:id/'].each do |route|
-  get route do
-    redirect request.path.sub(/\/$/, '')
-  end
-end
-
 get '/:name/:id/exif' do
   @album = Lib::Album.load params[:name]
   password?
@@ -223,30 +241,45 @@ get '/:name/:id/exif' do
   end.join("\n") + "</pre></body></html>"
 end
 
-['/:name', '/:name/:id'].each do |route|
-  get route do
+get '/:name/?' do
     @album = Lib::Album.load params[:name]
     password?
 
-    if params[:id].nil?
-      if @album.reverse?
-        @photos = @album.photos.values.reverse
-      else
-        @photos = @album.photos.values
-      end
-      haml :album
+    if @album.reverse?
+      @photos = @album.photos.values.reverse
     else
-      halt 404 if not @album.photos.key? params[:id]
-      @photo = @album.photos[params[:id]]
-      if @album.reverse?
-        @next = @photo.prev
-        @prev = @photo.next
-      else
-        @prev = @photo.prev
-        @next = @photo.next
-      end
-      haml :photo, :layout => params[:ajax].nil?
+      @photos = @album.photos.values
     end
+    haml :album
+end
+
+get '/:name/:id/?' do
+  @album = Lib::Album.load params[:name]
+  password?
+
+  halt 404 if not @album.photos.key? params[:id]
+  @photo = @album.photos[params[:id]]
+
+  @data = {
+    :preview => preview(@photo),
+    :back => "/#{@album.name}/##{@photo.id}",
+    :zip => @album.config(:zip) && !mobile?,
+    :album => @album.name,
+    :id => @photo.id,
+    :ext => @photo.ext,
+    :exif => exif(@photo),
+    :share => @album.config(:share),
+    :page => photo_page(@photo),
+    :next => photo_page(@album.reverse? && @photo.prev || @photo.next),
+    :prev => photo_page(@album.reverse? && @photo.next || @photo.prev),
+    :crypt => crypt(@album.name + "/" + @photo.id.to_s),
+  }
+
+  if request.xhr?
+    content_type :json
+    @data.to_json
+  else
+    haml :photo
   end
 end
 

@@ -42,11 +42,6 @@
 
     $(function() {
       $("img.lazy").lazyload();
-      $('a.item').click(function() {
-        var url = window.location.href.replace(/#\d+$/, '') + '#' + this.name;
-        if (history.pushState) history.pushState({}, document.title, url);
-        return true;
-      });
     })
   }
 

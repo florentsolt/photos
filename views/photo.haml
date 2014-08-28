@@ -1,26 +1,25 @@
 -# encoding:utf-8
 #photo
   #preview
-    .wrapper
-      %img{:src => preview(@photo)}
+    #wrapper
+      %img
 
   #top.over
-    %a#back{:href => "/#{@album.name}/##{@photo.id}"}= "« #{t.back}"
+    %a#back= "« #{t.back}"
     .download
-      - if @album.config(:zip) and not mobile?
+      %span.zip
         .icon-cloud-download
-        %a{:href => "/#{@album.name}/zip"}= t.download.all
+        %a= t.download.all
         &nbsp;—&nbsp;
       .icon-cloud-download
-      %a{:href => "/download/#{@album.name}/#{@photo.id}/original.#{@photo.ext}"}= t.download.this
+      %a#original= t.download.this
 
   #bottom.over
-    #exif= exif(@photo)
-    - if @album.config(:share)
-      .share
-        %a.icon-twitter-sign{:onclick => "tw('http://twitter.com/intent/tweet?text=&url=#{CGI.escape photo_page(@photo)}'); return false;" }
-        %a.icon-facebook-sign{:onclick => "fb('http://www.facebook.com/sharer.php?u=#{CGI.escape photo_page(@photo)}'); return false;"}
-        %a.icon-pinterest-sign{:onclick => "pin('http://pinterest.com/pin/create/button/?url=#{CGI.escape photo_page(@photo)}&media=#{CGI.escape preview(@photo)}'); return false"}
+    #exif
+    .share
+      %a.icon-twitter-sign
+      %a.icon-facebook-sign
+      %a.icon-pinterest-sign
 
   - if not mobile?
 
@@ -31,6 +30,71 @@
       .icon-chevron-right
 
 :javascript
+
+  function load(data) {
+    $('#preview img').fadeOut(100, function() {
+      $(this).replaceWith('<img src="' + data.preview +'" />');
+      $('#preview').maximize().unbind('imageReady').on('imageReady', function(e, img) {
+        img.css('visibility', 'visible').fadeIn();
+      });
+    });
+
+    $('#back').attr('href', data.back);
+    if (data.zip) {
+      $('#top .download .zip a').attr('href', '/' + encodeURI(data.album) + '/zip');
+      $('#top .download .zip').show();
+    } else {
+      $('#top .download .zip').hide();
+    }
+    $('#original').attr('href', '/download/' + encodeURI(data.album) + '/' + encodeURI(data.id) + '/original.' + encodeURI(data.ext));
+    $('#exif').text(data.exif);
+    if (data.share) {
+      $('#bottom .share .icon-twitter-sign').click(function() {
+        tw(data.page);
+      });
+      $('#bottom .share .icon-facebook-sign').click(function() {
+        fb(data.page);
+      });
+      $('#bottom .share .icon-pinterest-sign').click(function() {
+        pin(data.page, data.preview);
+      });
+      $('#bottom .share').show();
+    } else {
+      $('#bottom .share').hide();
+      $('#bottom .share .icon-twitter-sign').unbind('click');
+      $('#bottom .share .icon-facebook-sign').unbind('click');
+      $('#bottom .share .icon-pinterest-sign').unbind('click');
+    }
+    window.next = data.next;
+    window.prev = data.prev;
+
+    $('<img class="preload"/>').attr('src', data.next + '/preview.jpg').css('display', 'none').appendTo($('body'));
+    $('<img class="preload"/>').attr('src', data.prev + '/preview.jpg').css('display', 'none').appendTo($('body'));
+
+    var preloads = $('img.preload');
+    if (preloads.length >= 4) {
+      preloads[0].remove();
+      preloads[1].remove();
+    }
+  }
+
+  function left() {
+    if (window.prev) {
+      if (history.pushState) {
+        history.pushState({}, document.title, window.prev);
+      }
+      $.getJSON(window.prev, load);
+    }
+  }
+
+  function right() {
+    if (window.next) {
+      if (history.pushState) {
+        history.pushState({}, document.title, window.next);
+      }
+      $.getJSON(window.next, load);
+    }
+  }
 
   function fullscreen() {
     var e = document.body;
@@ -57,38 +121,28 @@
     }
   }
 
-  $(function(){
-    function loadPage(url, noPush) {
-      $(document).unbind('keydown');
-        $.ajax(url + "?ajax=1").done(function(page) {
-          if (!noPush && history.pushState) history.pushState(42, document.title, url);
-          $('#content').html(page);
-          if (typeof _gaq != "undefined") _gaq.push(['_trackPageview', window.location.pathname]);
-      });
-    }
+  $(function() {
+    window.onpopstate = function(event) {
+      $.getJSON(window.location.pathname, load);
+    };
 
-    function left() {
-      loadPage(#{photo_page(@prev).to_json}, false);
-    }
+    $.fn.maximize.defaults = {
+      center: 'both',
+      align: 'left',
+      resize: 'fill',
+      zoomInLimit: 1,
+      maxWidth: 0, 
+      maxHeight: 0,
+      effect: false
+    };
 
-    function right() {
-      loadPage(#{photo_page(@next).to_json}, false);
-    }
+    load(#{@data.to_json});
 
     $('html').addClass('noscroll');
-
+    $('#left').click(left);
+    $('#right').click(right);
+    $('#preview img');
     $('#preview')
-      .css({visibility: 'hidden'})
-      .maximize({
-        resize: 'fill',
-        align: 'left',
-        center: 'both',
-        effect: false,
-        zoomInLimit: 1,
-      })
-      .on('imageReady', function(e, img) {
-        img.css({visibility: 'visible'});
-      })
       .swipeEvents()
       .bind("swipeLeft",  function(){
         $('#preview img').animate({left: '-=100'});
@@ -98,28 +152,16 @@
         $('#preview img').animate({left: '+=100'});
         left();
       });
-
-    $('#left').click(left);
-    $('#right').click(right);
-
+    
     $(document).keydown(function(e) {
       if (e.keyCode == 37) {
         left();
       } else if (e.keyCode == 39) {
         right();
-      } else if (e.keyCode == 70 || e.keyCode == 76) { // F or L
+      } else if (e.keyCode == 70) { // F
         fullscreen();
       }
     });
 
-    var imagePrev = $('<img />').attr('src', #{photo_page(@prev).to_json} + '/preview.#{@prev.ext}');
-    var imageNext = $('<img />').attr('src', #{photo_page(@next).to_json} + '/preview.#{@next.ext}');
-
-    window.onpopstate = function(event) {
-      // Chrome fire onpopstate on loading
-      if (event.state !== null) {
-        loadPage(document.location.pathname, true);
-      }
-    };
   });
 
