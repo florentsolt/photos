@@ -64,6 +64,9 @@ helpers do
     value = Digest::SHA1.hexdigest(pwd + Time.now.strftime("%y%-m%-d"))
     if not cookies[name] == value
       cookies.delete name
+      headers "Cache-Control" => "no-cache, no-store, must-revalidate"
+      headers "Pragma" => "no-cache"
+      headers "Expires" => "0"
       halt 403, haml(:password)
     end
   end
@@ -200,7 +203,7 @@ get '/js' do
   $JS
 end
 
-get '/link/:token/:type.:ext' do 
+get '/link/:token/:type.:ext' do
   call env.merge("PATH_INFO" => "/#{decrypt(params[:token])}/#{params[:type]}.#{params[:ext]}")
 end
 
