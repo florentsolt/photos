@@ -20,19 +20,20 @@
   #desc= h @album.config(:desc)
 
 .container
-  - @photos.each do |photo|
-    - if @album.config(:section) and not @album.config(:section)[photo.id].nil?
-      = "</div>"
-      .section= @album.config(:section)[photo.id]
-      = "<div class='container'>"
-    %a.item{:name => photo.id, :href => photo_page(photo)}<>= thumb(photo)
+  .wrapper
+    - @photos.each do |photo|
+      - if @album.config(:section) and not @album.config(:section)[photo.id].nil?
+        = "</div>"
+        .section= @album.config(:section)[photo.id]
+        = "<div class='container'>"
+      %a.item{:name => photo.id, :href => photo_page(photo)}<>= thumb(photo)
 
 :javascript
 
   if (document.location.hash != '#debug') {
     var container = document.querySelector('#container');
     if (navigator.platform.indexOf("iPhone") == -1) {
-      $('.container').masonry({
+      $('.wrapper').masonry({
         itemSelector : '.item',
         isFitWidth: true,
         gutter: 20,
