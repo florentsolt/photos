@@ -75,6 +75,10 @@ helpers do
     request.user_agent =~ /ipad|iphone|mobile|android/i
   end
 
+  def ipad?
+    request.user_agent =~ /ipad/i
+  end
+
   def deliver(file, type, download = false)
     if download and not mobile?
       headers "Content-Disposition" => "attachment; filename=#{File.basename(file)}"
@@ -149,14 +153,24 @@ helpers do
   end
 
   def thumb(photo)
-    type = @album.config(:thumb).to_sym
-    type = [:square, :resize].sample if type == :random
+    if ipad?
+      width = 720
+      type = :preview if ipad?
+      "<img class='lazy' width='%d' height='%d' data-original='%s' src='/gfx/transparent.gif'>" % [
+        width,
+        width * photo.size(type).y.to_i / photo.size(type).x.to_i,
+        "/#{@album.name}/#{photo.id}/#{type}.#{photo.ext}"
+      ]
+    else
+      type = @album.config(:thumb).to_sym
+      type = [:square, :resize].sample if type == :random
 
-    "<img class='lazy' width='%d' height='%d' data-original='%s' src='/gfx/transparent.gif'>" % [
-      photo.size(type).x.to_i,
-      photo.size(type).y.to_i,
-      "/#{@album.name}/#{photo.id}/#{type}.#{photo.ext}"
-    ]
+      "<img class='lazy' width='%d' height='%d' data-original='%s' src='/gfx/transparent.gif'>" % [
+        (ipad? && 800 || photo.size(type).x.to_i),
+        (ipad? && '' || photo.size(type).y.to_i),
+        "/#{@album.name}/#{photo.id}/#{type}.#{photo.ext}"
+      ]
+    end
   end
 end
 

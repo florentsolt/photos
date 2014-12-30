@@ -32,7 +32,7 @@
 
   if (document.location.hash != '#debug') {
     var container = document.querySelector('#container');
-    if (navigator.platform.indexOf("iPhone") == -1) {
+    if (navigator.platform.indexOf("iPhone") == -1 && navigator.platform.indexOf("iPad") == -1) {
       $('.wrapper').masonry({
         itemSelector : '.item',
         isFitWidth: true,
