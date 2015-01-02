@@ -47,7 +47,7 @@
       $('#top .download .zip').hide();
     }
     $('#original').attr('href', '/download/' + encodeURI(data.album) + '/' + encodeURI(data.id) + '/original.' + encodeURI(data.ext));
-    $('#exif').text(data.exif);
+    $('#exif').html(data.exif);
     if (data.share) {
       $('#bottom .share .icon-twitter-sign').click(function() {
         tw(data.page);

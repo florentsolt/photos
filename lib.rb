@@ -6,7 +6,7 @@ require 'json'
 class String; def /(path); File.join(self, path.to_s); end; end
 class Symbol; def /(path); File.join(self.to_s, path.to_s); end; end
 
-require __dir__ / :lib/ :config
+require __dir__ / :lib / :config
 require __dir__ / :lib / :index
 require __dir__ / :lib / :times
 require __dir__ / :lib / :album

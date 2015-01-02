@@ -132,7 +132,7 @@ module Lib
             else
               # else only do a symlink
               puts "Symlink #{url.path} in #{filename}"
-              File.symlink '..' / url.path, config(:path) / @name / filename
+              File.symlink '..' / url.host / url.path, config(:path) / @name / filename
             end
           else
             http = Curl::Easy.perform(url.to_s) do |curl|

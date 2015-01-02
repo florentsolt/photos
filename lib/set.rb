@@ -99,7 +99,7 @@ class Set
 
     when "local"
       photo = Album.load(@url.host).photos[@url.path[1..-1]]
-      urls << "file://#{photo.filename(:original)}"
+      urls << "file://#{photo.uri(:original)}"
 
     else
       throw "Unkown set type #{@url}"
