@@ -154,23 +154,20 @@ helpers do
 
   def thumb(photo)
     if ipad?
+      type = :preview
       width = 720
-      type = :preview if ipad?
-      "<img class='lazy' width='%d' height='%d' data-original='%s' src='/gfx/transparent.gif'>" % [
-        width,
-        width * photo.size(type).y.to_i / photo.size(type).x.to_i,
-        "/#{@album.name}/#{photo.id}/#{type}.#{photo.ext}"
-      ]
+      height = width * photo.size(type).y.to_i / photo.size(type).x.to_i,
     else
-      type = @album.config(:thumb).to_sym
-      type = [:square, :resize].sample if type == :random
-
-      "<img class='lazy' width='%d' height='%d' data-original='%s' src='/gfx/transparent.gif'>" % [
-        (ipad? && 800 || photo.size(type).x.to_i),
-        (ipad? && '' || photo.size(type).y.to_i),
-        "/#{@album.name}/#{photo.id}/#{type}.#{photo.ext}"
-      ]
+      type = :resize
+      width = photo.size(:resize).x.to_i
+      height = photo.size(:resize).y.to_i)
     end
+
+    "<img class='lazy' width='%d' height='%d' data-original='%s' src='/gfx/transparent.gif'>" % [
+      width,
+      height,
+      "/#{@album.name}/#{photo.id}/#{type}.#{photo.ext}"
+    ]
   end
 end
 

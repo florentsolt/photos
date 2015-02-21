@@ -18,7 +18,6 @@ desc: "Some nice pictures"
 zip: false
 font: "Marvel"
 preview: "1600x1200"
-thumb: "resize"
 quality: 90
 style: "inset"
 index:

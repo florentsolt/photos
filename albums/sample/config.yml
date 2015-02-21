@@ -48,6 +48,3 @@ share: true
 
 # Thumbnails style, it can be: nothing, "inset", "polaroid"
 style: inset
-
-# The thumbnail to choose "resize" or "square"
-thumb: resize

@@ -2,7 +2,7 @@ module Lib
 class Photo
 
   FORMAT = "%05d"
-  SIZES = [:original, :resize, :square, :preview]
+  SIZES = [:original, :resize, :preview]
 
   def self.from_uri(uri)
     uri.strip!
@@ -34,8 +34,6 @@ class Photo
     @album.name / case type
     when :original
       "#{@album.name}-#{@id}.#{@ext}"
-    when :square
-      "square-#{@id}.#{@ext}"
     when :resize
       "resize-#{@id}.#{@ext}"
     when :preview
@@ -93,7 +91,7 @@ class Photo
 
   def optimize!
     return if @optimized
-    [:square, :resize, :preview].each do |size|
+    [:resize, :preview].each do |size|
       Optimize.file(filename(size))
     end
     @optimized = true
@@ -103,7 +101,6 @@ class Photo
     require 'image_sorcery'
 
     quality = @album.config(:quality)
-    square = "#{@album.config(:size)}x#{@album.config(:size)}"
     resize = @album.config(:size)
     preview = @album.config(:preview)
 
@@ -114,11 +111,6 @@ class Photo
       puts "Create #{File.basename(filename(:resize))}"
     end
 
-    if not File.exists? filename(:square) or force
-      image.convert(filename(:square), quality: quality, thumbnail: "#{square}^", gravity: "center", extent: square)
-      puts "Create #{File.basename(filename(:square))}"
-    end
-
     if not File.exists? filename(:preview) or force
       image.convert(filename(:preview), quality: quality, scale: preview)
       puts "Create #{File.basename(filename(:preview))}"
@@ -126,7 +118,7 @@ class Photo
   end
 
   def clear!(keep_originals = false)
-    files = [filename(:resize), filename(:square), filename(:preview)]
+    files = [filename(:resize), filename(:preview)]
     files << filename(:original) if not keep_originals
     files.each do |file|
       if File.exists? file
