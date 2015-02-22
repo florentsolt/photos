@@ -156,11 +156,11 @@ helpers do
     if ipad?
       type = :preview
       width = 720
-      height = width * photo.size(type).y.to_i / photo.size(type).x.to_i,
+      height = width * photo.size(type).y.to_i / photo.size(type).x.to_i
     else
       type = :resize
       width = photo.size(:resize).x.to_i
-      height = photo.size(:resize).y.to_i)
+      height = photo.size(:resize).y.to_i
     end
 
     "<img class='lazy' width='%d' height='%d' data-original='%s' src='/gfx/transparent.gif'>" % [
@@ -218,7 +218,7 @@ get '/link/:token/:type.:ext' do
   call env.merge("PATH_INFO" => "/#{decrypt(params[:token])}/#{params[:type]}.#{params[:ext]}")
 end
 
-[:square, :resize, :preview, :original].each do |type|
+[:resize, :preview, :original].each do |type|
   get "/:name/:id/#{type}.:ext" do
     @album = Lib::Album.load params[:name]
     password?
