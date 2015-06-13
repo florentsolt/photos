@@ -9,4 +9,3 @@ gem "sinatra-r18n"
 gem "rubyzip", '>=1.0'
 gem "haml"
 gem "sass"
-gem "gattica", :git => "git://github.com/chrisle/gattica.git"

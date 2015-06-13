@@ -5,7 +5,7 @@
 # The source of the pictures
 # It can be on Flickr, with xxx = the set ID
 # set: flickr://xxx
-# It can be a local zip file 
+# It can be a local zip file
 # set: zip:///path/to/file.zip
 # It can be a remote zip file, via scp
 # set: zip+scp://user@host/path/to/file.zip
@@ -36,9 +36,6 @@ font: 'Poiret One'
 
 # Display order, it can be "reverse" or "normal", by default it's "normal"
 sort: "reverse"
-
-# Display exif informations in the footer ?
-exif: true
 
 # Display date in the footer ?
 date: true

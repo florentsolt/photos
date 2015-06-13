@@ -24,7 +24,7 @@ class Index
     when "title"
       albums.sort!{|a,b| a.config(:title) <=> b.config(:title)}
     when "time", "times", "date", "dates"
-      albums.sort!{|a,b| (b.times.min || 0) <=> (a.times.min || 0)}
+      albums.sort!{|a,b| b.timestamp <=> a.timestamp}
     end
 
     albums

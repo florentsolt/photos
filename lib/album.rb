@@ -2,23 +2,31 @@ module Lib
   class Album
 
     @@cache = {}
+    @@timestamps = {}
 
     DUMP_FILE = "album.msh"
 
     def self.load(name)
       filename = Config.default(:path) / name / DUMP_FILE
-      return @@cache[name] if @@cache.key? name
-
-      if File.exists? filename
-        @@cache[name] = Marshal.load(File.read(filename))
-      else
+      if not File.exists? filename
         @@cache[name] = Album.new(name)
+        @@timestamps[name] = 0
+      else
+        ts = File.mtime(filename).to_i
+        if not @@cache.key? name or @@timestamps[name] != ts
+          @@timestamps[name] = ts
+          begin
+            @@cache[name] = Marshal.load(File.read(filename))
+          rescue
+            @@cache[name] = Album.new(name)
+          end
+        end
       end
+      @@cache[name]
     end
 
     def initialize(name)
       @name = File.basename(name)
-      @times = Times.new
       @photos = {}
       throw "Unknown photo album #{@name}" if not File.directory? Config.default(:path) / @name
     end
@@ -31,6 +39,10 @@ module Lib
 
     def name
       @name
+    end
+
+    def timestamp
+      @@timestamps[@name]
     end
 
     def config(name)
@@ -62,7 +74,7 @@ module Lib
 
     def photos
       @photos
-    end 
+    end
 
     def reverse?
       config(:sort).to_s == 'reverse'
@@ -149,7 +161,6 @@ module Lib
           end
         end
 
-        @times = Times.new
       end
 
       self.dump
@@ -188,7 +199,7 @@ module Lib
         i = 1
         samples.each do |s|
           filename = self.samples.sub('.png', "#{i}.png");
-          image = ImageSorcery.gm(config(:path) / s.uri(:resize))
+          image = ImageSorcery.gm(config(:path) / s.uri(:thumb))
           image.convert(filename, quality: self.config(:quality), thumbnail: "50^", gravity: "center", extent: '50x50')
           samples[i - 1] = filename
           i += 1
@@ -199,6 +210,10 @@ module Lib
                       background: '#000000FF', tile: '5x1', geometry: '50x50',
                       borderwidth: 1, bordercolor: '#000000FF', frame: '0x0+0+0')
         Optimize.file(self.samples)
+
+        samples.each do |sample|
+          File.unlink sample
+        end
       end
     end
 
@@ -207,25 +222,6 @@ module Lib
         photo.sizes!(force)
       end
       self.dump
-    end
-
-    def exif!(force = false)
-      photos.each do |id, photo|
-        photo.exif!(force)
-      end
-      self.dump
-    end
-
-    def times!(force = false)
-      if @times.min.nil? or @times.max.nil? or force
-        times = @photos.values.collect{|photo| photo.exif.time}.delete_if{|time| time == 0}
-        @times = Times.new(times.min, times.max)
-      end
-      self.dump
-    end
-
-    def times
-      @times
     end
 
     def zip!

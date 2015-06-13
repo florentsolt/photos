@@ -12,18 +12,13 @@ path: "/path/for/your/albums"
 flickr:
   api_key: http://www.flickr.com/services/apps/create/apply
   shared_secret: http://www.flickr.com/services/apps/create/apply
-size: 200
+size: 300
 title: "Photostream"
 desc: "Some nice pictures"
 zip: false
 font: "Marvel"
 preview: "1600x1200"
 quality: 90
-style: "inset"
 index:
   password: "secret"
   sort: "date"
-ganalytics:
-  email: "example@gmail.com"
-  password: "secret"
-  profile: 42424242

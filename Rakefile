@@ -9,10 +9,18 @@ namespace :photos do
     FlickRaw.shared_secret = Lib::Config.default(:flickr, :shared_secret)
 
     if args[:name].nil?
-      puts "You must provide a <name>"
-      exit
+      pwd = ENV['PWD']
+      root = File.realpath(Lib::Config.default(:path))
+      if pwd.start_with? root
+        @name = pwd[root.length+1..-1]
+      else
+        puts "You must provide a <name> or move to a folder containing a <config.yml>"
+        exit
+      end
+    else
+      @name = args[:name]
     end
-    @album = Lib::Album.load args[:name]
+    @album = Lib::Album.load @name
   end
 
   desc "Authorization for your flickr account"
@@ -81,26 +89,6 @@ namespace :photos do
     @album.zip!
   end
 
-  desc "Extract EXIF"
-  task :exif, [:name] => :auth do
-    @album.exif!
-  end
-
-  desc "Force extract EXIF"
-  task :force_exif, [:name] => :auth do
-    @album.exif! true
-  end
-
-  desc "Extract times"
-  task :times, [:name] => :exif do
-    @album.times!
-  end
-
-  desc "Force extract times"
-  task :force_times, [:name] => :exif do
-    @album.times! true
-  end
-
   desc "Optimize the photos"
   task :optimize, [:name] => :thumbs do
     @album.optimize!
@@ -114,14 +102,12 @@ namespace :photos do
   desc "Rebuild (without removing originals)"
   task :rebuild, [:name] => :auth do |task, args|
     @album.clear! true
-    @album = Lib::Album.load args[:name]
+    @album = Lib::Album.load @name
     @album.scan!
     @album.thumbs! true
     @album.samples! true
     @album.sizes! true
     @album.optimize!
-    @album.exif! true
-    @album.times! true
     @album.zip!
   end
 
@@ -129,8 +115,6 @@ namespace :photos do
   task :meta, [:name] => :config do
     @album.scan!
     @album.sizes!
-    @album.exif!
-    @album.times!
   end
 
   desc "Scan"
@@ -140,13 +124,11 @@ namespace :photos do
     @album.samples!
     @album.sizes!
     @album.optimize!
-    @album.exif!
-    @album.times!
     @album.zip!
   end
 
   desc "La totale"
-  task :all, [:name] => [:download, :thumbs, :sizes, :exif, :samples, :zip, :optimize, :times]
+  task :all, [:name] => [:download, :thumbs, :sizes, :samples, :zip, :optimize]
 
 end
 

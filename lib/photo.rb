@@ -2,21 +2,13 @@ module Lib
 class Photo
 
   FORMAT = "%05d"
-  SIZES = [:original, :resize, :preview]
-
-  def self.from_uri(uri)
-    uri.strip!
-    uri = uri[1..-1] if uri[0] == '/'
-    name, id = uri.split('/')
-    Album.load(name).photos[id]
-  end
+  SIZES = [:original, :thumb, :preview]
 
   def initialize(album, id, ext = false)
     @album = album
     @id = id
     @ext = ext || @album.photos[@id].ext || 'jpg'
     @sizes = {}
-    @exif = nil
     @optimized = false
   end
 
@@ -34,8 +26,8 @@ class Photo
     @album.name / case type
     when :original
       "#{@album.name}-#{@id}.#{@ext}"
-    when :resize
-      "resize-#{@id}.#{@ext}"
+    when :thumb
+      "thumb-#{@id}.#{@ext}"
     when :preview
       "preview-#{@id}.#{@ext}"
     else
@@ -63,35 +55,9 @@ class Photo
     @sizes
   end
 
-  def exif(raw = false)
-    if raw
-      JSON.load(`exiftool -j '#{filename(:original)}'`).first
-    else
-      @exif
-    end
-  end
-
-  def exif!(force = false)
-    if force or @exif.nil?
-      puts "Extract EXIF from #{File.basename(filename(:original))}"
-      exif = JSON.load(`exiftool -j '#{filename(:original)}'`).first
-
-      time = exif["DateTimeOriginal"] || exif["DateTimeCreated"] || exif["CreateDate"] || exif["DigitalCreationDateTime"] || ""
-      time = Time.new *(time.scan(/\d+/).collect{|d| d.to_i})
-
-      @exif = Exif.new(
-        exif["FocalLength"].to_i, # focal
-        exif["ShutterSpeedValue"] || 0, # speed
-        exif["ApertureValue"] || 0, # aperture
-        exif["ISO"].to_i, #iso 
-        time.to_i # time
-      )
-    end
-  end
-
   def optimize!
     return if @optimized
-    [:resize, :preview].each do |size|
+    [:thumb, :preview].each do |size|
       Optimize.file(filename(size))
     end
     @optimized = true
@@ -101,14 +67,14 @@ class Photo
     require 'image_sorcery'
 
     quality = @album.config(:quality)
-    resize = @album.config(:size)
+    thumb = @album.config(:thumb)
     preview = @album.config(:preview)
 
     image = ImageSorcery.gm(filename(:original))
 
-    if not File.exists? filename(:resize) or force
-      image.convert(filename(:resize), quality: quality, thumbnail: "#{resize}x")
-      puts "Create #{File.basename(filename(:resize))}"
+    if not File.exists? filename(:thumb) or force
+      image.convert(filename(:thumb), quality: quality, thumbnail: "x#{thumb}^")
+      puts "Create #{File.basename(filename(:thumb))}"
     end
 
     if not File.exists? filename(:preview) or force
@@ -118,7 +84,7 @@ class Photo
   end
 
   def clear!(keep_originals = false)
-    files = [filename(:resize), filename(:preview)]
+    files = [filename(:thumb), filename(:preview)]
     files << filename(:original) if not keep_originals
     files.each do |file|
       if File.exists? file
@@ -128,15 +94,5 @@ class Photo
     end
   end
 
-  def next
-    index = @album.photos.keys.index(@id)
-    @album.photos.values[index + 1] || @album.photos.values.first
-  end
-
-  def prev
-    index = @album.photos.keys.index(@id)
-    @album.photos.values[index - 1] || @album.photos.values.last
-  end
- 
 end
 end

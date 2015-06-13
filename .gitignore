@@ -1,2 +1,4 @@
 config.yml
 Gemfile.lock
+.DS_Store
+.bundle
