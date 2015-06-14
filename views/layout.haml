@@ -6,11 +6,13 @@
       %link{:href => @album.font_href, :rel => 'stylesheet', :type => 'text/css'}
     %meta{'http-equiv' => 'content-type', :content => 'text/html; charset=utf-8'}
     %meta{:name => 'viewport', :content => "width=device-width, user-scalable=no"}
+    %script{:type => 'text/javascript', :src => "http://code.jquery.com/jquery-2.1.4.min.js"}
     %script{:type => 'text/javascript', :src => "/js?#{Time.now.strftime "%Y%m%d"}"}
     %link{:href => '/favicon.ico', :rel => 'shortcut icon'}
     %link{:rel => "apple-touch-icon", :href => "favicon.png"}
     %link{:href => "/css?#{Time.now.strftime "%Y%m%d"}", :rel => 'stylesheet', :type => 'text/css'}
     %link{:href => "/css/photoswipe.css", :rel => 'stylesheet', :type => 'text/css'}
+    %link{:href => "/css/justifiedGallery.min.css", :rel => 'stylesheet', :type => 'text/css'}
     %link{:href => "/css/default-skin/default-skin.css", :rel => 'stylesheet', :type => 'text/css'}
     - if not @photo.nil?
 

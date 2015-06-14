@@ -19,8 +19,8 @@
         = "</div>"
         .section= @album.config(:section)[photo.id]
         = "<div class='wrapper'>"
-      %a.item{:name => photo.id, :href => preview(photo), "data-size" => "#{photo.size(:preview).x}x#{photo.size(:preview).y}", "data-width" => photo.size(:thumb).x, "data-height" => photo.size(:thumb).y}<>
-        %img{:class => 'b-lazy', :src => 'gfx/transparent.gif', "data-src" => thumb(photo), :width => '100%', :height => '100%'}
+      %a.item{:name => photo.id, :href => preview(photo), "data-size" => "#{photo.size(:preview).x}x#{photo.size(:preview).y}"}<>
+        %img{:class => 'b-lazy', :src => 'gfx/transparent.gif', "data-src" => thumb(photo), :width => photo.size(:thumb).x, :height => photo.size(:thumb).y}
 
 :plain
   <!-- Root element of PhotoSwipe. Must have class pswp. -->
@@ -174,8 +174,9 @@
 
       // find root element of slide
       var clickedListItem = closest(eTarget, function(el) {
-          return (el.tagName && el.className.toLowerCase() === 'item');
+          return (el.tagName == 'A');
       });
+
 
       if(!clickedListItem) {
           return;
@@ -275,6 +276,7 @@
   };
 
   // HorizontalGrid
+  /*
   var wrappers = document.querySelectorAll('.wrapper');
   for (var i = 0; i < wrappers.length; i++) {
     HorizontalGridPacking(wrappers[i], {
@@ -282,9 +284,15 @@
       height: #{@album.config(:thumb)}
     });
   }
+  */
+
+  $(".wrapper").justifiedGallery({
+    rowHeight: #{@album.config(:thumb)} / 2,
+    margins: 5,
+    waitThumbnailsLoad: false
+  });
 
   // Blazy
   new Blazy();
-
   // PhotoSwipe
   initPhotoSwipeFromDOM();
