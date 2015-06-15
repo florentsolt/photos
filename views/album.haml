@@ -12,7 +12,7 @@
   = h @album.config(:title)
   #desc= h @album.config(:desc)
 
-.container
+#container
   .wrapper
     - @photos.each do |photo|
       - if @album.config(:section) and not @album.config(:section)[photo.id].nil?
@@ -22,6 +22,16 @@
       %a.item{:id => photo.id.to_i, :href => preview(photo), "data-size" => "#{photo.size(:preview).x}x#{photo.size(:preview).y}"}<>
         %img{:class => 'lazy', :src => 'img/transparent.gif', "data-original" => thumb(photo), :width => photo.size(:thumb).x, :height => photo.size(:thumb).y}
 
+:plain
+  <div id="blueimp-gallery" class="blueimp-gallery">
+      <div class="slides"></div>
+      <h3 class="title"></h3>
+      <a class="prev">‹</a>
+      <a class="next">›</a>
+      <a class="close">×</a>
+  </div>
+
+
 :javascript
 
   $(".wrapper").justifiedGallery({
@@ -30,7 +40,8 @@
     waitThumbnailsLoad: false
   });
 
-  baguetteBox.run('.container', {
+  /*
+  baguetteBox.run('#container', {
     onChange: function(index) {
       window.location.hash = index;
     },
@@ -38,6 +49,20 @@
       window.location.hash = 'gallery';
     }
   });
+  */
+
+  document.getElementById('container').onclick = function (event) {
+      event = event || window.event;
+      var target = event.target || event.srcElement,
+          link = target.src ? target.parentNode : target,
+          options = {
+            index: link,
+            event: event
+          },
+          links = this.getElementsByTagName('a');
+      blueimp.Gallery(links, options);
+  };
+
 
   $("img.lazy").lazyload();
 
