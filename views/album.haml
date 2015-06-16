@@ -20,7 +20,7 @@
         .section= @album.config(:section)[photo.id]
         = "<div class='wrapper'>"
       %a.item{:id => photo.id.to_i, :href => preview(photo), "data-size" => "#{photo.size(:preview).x}x#{photo.size(:preview).y}"}<>
-        %img{:class => 'lazy', :src => 'img/transparent.gif', "data-original" => thumb(photo), :width => photo.size(:thumb).x, :height => photo.size(:thumb).y}
+        %img{:class => 'b-lazy', :src => 'img/transparent.gif', "data-src" => thumb(photo), :width => photo.size(:thumb).x, :height => photo.size(:thumb).y}
 
 :plain
   <div id="blueimp-gallery" class="blueimp-gallery">
@@ -64,7 +64,7 @@
   };
 
 
-  $("img.lazy").lazyload();
+  new Blazy({});
 
   var id = parseInt(window.location.hash.substr(1));
   if (id >= 0) {
