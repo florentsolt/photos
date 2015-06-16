@@ -13,6 +13,7 @@ flickr:
   api_key: http://www.flickr.com/services/apps/create/apply
   shared_secret: http://www.flickr.com/services/apps/create/apply
 size: 300
+page: 20
 title: "Photostream"
 desc: "Some nice pictures"
 zip: false
