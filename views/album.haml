@@ -1,6 +1,6 @@
 :css
-  #title, #desc, #zip, .section {
-    font-family: '#{@album.font_family}', sans-serif;
+  #title, #desc, #zip, .caption {
+    font-family: '#{@album.font_family}', sans-serif !important;
   }
 
 - if @album.config(:zip)
@@ -13,14 +13,7 @@
   #desc= h @album.config(:desc)
 
 #container
-  .wrapper
-    - @photos.each do |photo|
-      - if @album.config(:section) and not @album.config(:section)[photo.id].nil?
-        = "</div>"
-        .section= @album.config(:section)[photo.id]
-        = "<div class='wrapper'>"
-      %a.item{:id => photo.id.to_i, :href => preview(photo), "data-size" => "#{photo.size(:preview).x}x#{photo.size(:preview).y}"}<>
-        %img{:class => 'b-lazy', :src => 'img/transparent.gif', "data-src" => thumb(photo), :width => photo.size(:thumb).x, :height => photo.size(:thumb).y}
+  = haml(:page)
 
 :plain
   <div id="blueimp-gallery" class="blueimp-gallery">
@@ -34,22 +27,13 @@
 
 :javascript
 
-  $(".wrapper").justifiedGallery({
+  $("#container").justifiedGallery({
     rowHeight: #{@album.config(:thumb)} / 1.5,
     margins: 5,
-    waitThumbnailsLoad: false
+    waitThumbnailsLoad: false,
+    cssAnimation: true,
+    lastRow: "justify"
   });
-
-  /*
-  baguetteBox.run('#container', {
-    onChange: function(index) {
-      window.location.hash = index;
-    },
-    afterHide: function() {
-      window.location.hash = 'gallery';
-    }
-  });
-  */
 
   document.getElementById('container').onclick = function (event) {
       event = event || window.event;
@@ -63,10 +47,30 @@
       blueimp.Gallery(links, options);
   };
 
-
-  new Blazy({});
-
   var id = parseInt(window.location.hash.substr(1));
   if (id >= 0) {
     $('#' + id + ' img').click();
   }
+
+  var page = 1;
+  var end = false;
+  var wait = false;
+  $(window).scroll(function() {
+      if(end === false && wait === false && $(window).scrollTop() + $(window).height() + #{@album.config(:thumb)} >= $(document).height()) {
+        wait = true;
+        $('<div>').load("/#{@album.name}/page/" + page, function(html, status) {
+          if (status == 'error') {
+            if (html == 'No more pictures') {
+              end = true;
+            } else {
+              // Do not page++, that's it
+            }
+          } else {
+            $("#container").append($(this).html());
+            $('#container').justifiedGallery('norewind');
+            page++;
+          }
+          wait = false;
+        });
+      }
+  });
