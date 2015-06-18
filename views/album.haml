@@ -15,16 +15,6 @@
 #container
   = haml(:page)
 
-:plain
-  <div id="blueimp-gallery" class="blueimp-gallery">
-      <div class="slides"></div>
-      <h3 class="title"></h3>
-      <a class="prev">‹</a>
-      <a class="next">›</a>
-      <a class="close">×</a>
-  </div>
-
-
 :javascript
 
   $("#container").justifiedGallery({
@@ -35,21 +25,32 @@
     lastRow: "justify"
   });
 
-  document.getElementById('container').onclick = function (event) {
-      event = event || window.event;
-      var target = event.target || event.srcElement,
-          link = target.src ? target.parentNode : target,
-          options = {
-            index: link,
-            event: event
-          },
-          links = this.getElementsByTagName('a');
-      blueimp.Gallery(links, options);
-  };
+  var items = #{@gallery.to_json};
 
-  var id = parseInt(window.location.hash.substr(1));
-  if (id >= 0) {
-    $('#' + id + ' img').click();
+  $('#container').magnificPopup({
+    delegate: 'a',
+    type: 'image',
+    gallery:{
+      enabled:true
+    },
+    callbacks:{
+      change: function() {
+        window.location.hash = this.index;
+      },
+      beforeOpen: function() {
+        this.items = items;
+      },
+      close: function() {
+        window.location.hash = 'gallery';
+      }
+    },
+  });
+
+
+  var direct = parseInt(window.location.hash.substr(1), 10);
+  if (direct >= 0) {
+    $('#container').magnificPopup('open');
+    $('#container').magnificPopup('goTo', direct);
   }
 
   var page = 1;
