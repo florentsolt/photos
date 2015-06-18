@@ -31,7 +31,8 @@
     delegate: 'a',
     type: 'image',
     gallery:{
-      enabled:true
+      enabled:true,
+      tCounter: ''
     },
     callbacks:{
       change: function() {
@@ -40,9 +41,28 @@
       beforeOpen: function() {
         this.items = items;
       },
+      open: function() {
+        $("body").swipe("enable");
+      },
       close: function() {
         window.location.hash = 'gallery';
+        $("body").swipe("disable");
       }
+    },
+  });
+
+  $("body").swipe({
+    swipeLeft:function(event, direction, distance, duration, fingerCount) {
+      $('#container').magnificPopup('next');
+    },
+    swipeRight:function(event, direction, distance, duration, fingerCount) {
+      $('#container').magnificPopup('prev');
+    },
+    swipeDown:function(event, direction, distance, duration, fingerCount) {
+      $.magnificPopup.instance.close();
+    },
+    swipeUp:function(event, direction, distance, duration, fingerCount) {
+      $.magnificPopup.instance.close();
     },
   });
 

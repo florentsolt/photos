@@ -918,7 +918,6 @@ $.fn.magnificPopup = function(options) {
 	_checkInstance();
 
 	var jqEl = $(this);
-	console.log(jqEl.data('magnificPopup'));
 
 	// We call some API method of first param is a string
 	if (typeof options === "string" ) {
