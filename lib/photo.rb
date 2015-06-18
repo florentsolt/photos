@@ -39,6 +39,11 @@ class Photo
     @album.config(:path) / uri(type)
   end
 
+  def timestamp
+    require 'exifr'
+    EXIFR::JPEG.new(filename(:original)).date_time.to_i
+  end
+
   def size(type)
     @sizes[type]
   end

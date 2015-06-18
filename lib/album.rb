@@ -42,7 +42,15 @@ module Lib
     end
 
     def timestamp
-      @@timestamps[@name]
+      if @timestamp.nil?
+        if photos.keys.first.nil?
+          return 0
+        else
+          @timestamp = photos[photos.keys.first].timestamp
+          self.dump
+        end
+      end
+      @timestamp
     end
 
     def config(name)

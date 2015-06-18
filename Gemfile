@@ -9,3 +9,4 @@ gem "sinatra-r18n"
 gem "rubyzip", '>=1.0'
 gem "haml"
 gem "sass"
+gem "exifr"

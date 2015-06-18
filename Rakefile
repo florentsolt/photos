@@ -74,14 +74,19 @@ namespace :photos do
     @album.samples! true
   end
 
-  desc "Generate sizes"
+  desc "Get sizes"
   task :sizes, [:name] => :auth do |task, args|
     @album.sizes!
   end
 
-  desc "Force generate sizes"
+  desc "Force getting sizes"
   task :force_sizes, [:name] => :auth do |task, args|
     @album.sizes! true
+  end
+
+  desc "Get timestamp of the 1st photo"
+  task :timestamp, [:name] => :auth do |task, args|
+    @album.timestamp
   end
 
   desc "Compress the photos"
