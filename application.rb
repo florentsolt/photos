@@ -73,6 +73,10 @@ helpers do
     end
   end
 
+  def original(photo)
+    "#{request.scheme}://#{domain}/#{@album.name}/#{photo.id}/original.#{photo.ext}"
+  end
+
   def preview(photo)
     "#{request.scheme}://#{domain}/#{@album.name}/#{photo.id}/preview.#{photo.ext}"
   end
@@ -179,6 +183,7 @@ get '/:name/?' do
       {:src => preview(photo)}
     end
     @photos = @photos[0,@album.config(:page)] || []
+
     haml :album
 end
 
