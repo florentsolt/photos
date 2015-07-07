@@ -246,6 +246,7 @@ module Lib
       photos.each do |id, photo|
         photo.optimize!
       end
+      self.dump
     end
 
     def clear!(keep_originals = false)
