@@ -49,8 +49,9 @@ helpers do
     end
   end
 
-  def deliver(file, type, download = false)
-    headers "Content-Disposition" => "attachment; filename=#{File.basename(file)}" if download
+  def deliver(file, type, download = false, filename = nil)
+    filename ||= File.basename(file)
+    headers "Content-Disposition" => "attachment; filename=#{filename}" if download
     content_type type
     if settings.production?
       file = "/direct/" + file
@@ -60,7 +61,7 @@ helpers do
       if not download
         send_file Lib::Config.default(:path) / file, :type => type
       else
-        send_file Lib::Config.default(:path) / file, :type => type, :filename => File.basename(file)
+        send_file Lib::Config.default(:path) / file, :type => type, :filename => filename
       end
     end
   end
@@ -74,7 +75,7 @@ helpers do
   end
 
   def original(photo)
-    "#{request.scheme}://#{domain}/#{@album.name}/#{photo.id}/original.#{photo.ext}"
+    "#{request.scheme}://#{domain}/download/#{@album.name}/#{photo.id}/original.#{photo.ext}"
   end
 
   def preview(photo)
@@ -154,7 +155,7 @@ end
     @album = Lib::Album.load params[:name]
     password?
     @photo = @album.photos[params[:id]]
-    deliver @photo.uri(type), @photo.ext, true
+    deliver @photo.uri(type), @photo.ext, true, "#{@album.name}-#{type}-#{@photo.id}.#{@photo.ext}"
   end
 end
 
@@ -167,7 +168,7 @@ end
 get "/:name/zip" do
   @album = Lib::Album.load params[:name]
   password?
-  deliver @album.name / @album.zip, :zip, true
+  deliver @album.name / @album.zip, :zip, true, "#{@album.name}.zip"
 end
 
 get '/:name/?' do
