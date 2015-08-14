@@ -1,6 +1,5 @@
 source "https://rubygems.org"
 gem "flickraw"
-gem "nokogiri"
 gem "curb"
 gem "image_sorcery", ">=1.1.0"
 gem "sinatra"

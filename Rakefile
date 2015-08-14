@@ -9,7 +9,7 @@ namespace :photos do
     FlickRaw.shared_secret = Lib::Config.default(:flickr, :shared_secret)
 
     if args[:name].nil?
-      pwd = ENV['PWD']
+      pwd = File.realpath(ENV['PWD'])
       root = File.realpath(Lib::Config.default(:path))
       if pwd.start_with? root
         @name = pwd[root.length+1..-1]
