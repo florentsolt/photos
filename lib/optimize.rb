@@ -19,6 +19,8 @@ module Optimize
   end
 
   def self.gif(filename)
+    puts "Optimize GIF #{File.basename(filename)}"
+    system "gifsicle -b '#{filename}'"
   end
 end
 end

@@ -20,9 +20,11 @@
   $("#container").justifiedGallery({
     rowHeight: #{@album.config(:thumb)} / 1.5,
     margins: 5,
-    waitThumbnailsLoad: false,
+    waitThumbnailsLoad: true,
     cssAnimation: true,
     lastRow: "nojustify"
+  }).on('jg.complete', function() {
+    $("img.lazy").lazyload()
   });
 
   var items = #{@gallery.to_json};

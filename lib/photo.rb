@@ -26,6 +26,8 @@ class Photo
     @album.name / case type
     when :original
       "#{@album.name}-#{@id}.#{@ext}"
+    when :embedded
+      "embedded-#{@id}.gif"
     when :thumb
       "thumb-#{@id}.#{@ext}"
     when :preview
@@ -62,7 +64,7 @@ class Photo
 
   def optimize!
     return if @optimized
-    [:thumb, :preview].each do |size|
+    [:thumb, :preview, :embedded].each do |size|
       Optimize.file(filename(size))
     end
     @optimized = true
@@ -76,6 +78,11 @@ class Photo
     preview = @album.config(:preview)
 
     image = ImageSorcery.gm(filename(:original))
+
+    if not File.exists? filename(:embedded) or force
+      image.convert(filename(:embedded), quality: 20, thumbnail: "x42^")
+      puts "Create #{File.basename(filename(:embedded))}"
+    end
 
     if not File.exists? filename(:thumb) or force
       image.convert(filename(:thumb), quality: quality, thumbnail: "x#{thumb}^")

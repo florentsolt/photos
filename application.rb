@@ -6,6 +6,7 @@ require 'sinatra/r18n'
 require 'haml'
 require 'sass'
 require 'digest/sha1'
+require 'base64'
 
 require File.join(__dir__, 'lib')
 
@@ -30,7 +31,7 @@ helpers do
         pwd = Lib::Index.password
         name = 'pwd'
       else
-        halt 204
+        return
       end
     elsif @album.protected?
       pwd = @album.config(:password)
@@ -84,6 +85,10 @@ helpers do
 
   def thumb(photo)
     "#{request.scheme}://#{domain}/#{@album.name}/#{photo.id}/thumb.#{photo.ext}"
+  end
+
+  def embedded(photo)
+    "data:image/gif;base64,#{Base64.encode64(File.read(photo.filename(:embedded)))}"
   end
 end
 
@@ -200,7 +205,7 @@ get '/:name/page/:page' do
   else
     @photos = @album.photos.values
   end
-  @photos = @photos[page * size, size] || []
+  # @photos = @photos[page * size, size] || []
   if @photos.empty?
     halt 404, "No more pictures"
   else

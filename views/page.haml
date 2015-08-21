@@ -4,4 +4,4 @@
       %img{:src => "/img/transparent.gif"}
       .caption=@album.config(:section)[photo.id]
   %a.item{:id => photo.id.to_i, :href => original(photo)}<>
-    %img{:src => thumb(photo), :width => photo.size(:thumb).x, :height => photo.size(:thumb).y}
+    %img.lazy{:src => embedded(photo), :"data-original" => thumb(photo), :width => photo.size(:thumb).x, :height => photo.size(:thumb).y}
