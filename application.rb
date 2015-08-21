@@ -188,7 +188,7 @@ get '/:name/?' do
     @gallery = @photos.map do |photo|
       {:src => preview(photo)}
     end
-    @photos = @photos[0,@album.config(:page)] || []
+    # @photos = @photos[0,@album.config(:page)] || []
 
     haml :album
 end

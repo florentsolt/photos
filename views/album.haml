@@ -24,7 +24,9 @@
     cssAnimation: true,
     lastRow: "nojustify"
   }).on('jg.complete', function() {
-    $("img.lazy").lazyload()
+    $("img.lazy").lazyload({
+      event: "scrollstop"
+    })
   });
 
   var items = #{@gallery.to_json};
