@@ -242,9 +242,9 @@ module Lib
       'archive.zip'
     end
 
-    def optimize!
+    def optimize!(force = false)
       photos.each do |id, photo|
-        photo.optimize!
+        photo.optimize!(force)
       end
       self.dump
     end
