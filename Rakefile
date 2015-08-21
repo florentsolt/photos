@@ -99,6 +99,11 @@ namespace :photos do
     @album.optimize!
   end
 
+  desc "Force optimize the photos"
+  task :force_optimize, [:name] => :thumbs do
+    @album.optimize! true
+  end
+
   desc "Clear all photos even originals"
   task :clear, [:name] => :auth do
     @album.clear!

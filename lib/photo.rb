@@ -62,8 +62,8 @@ class Photo
     @sizes
   end
 
-  def optimize!
-    return if @optimized
+  def optimize!(force = false)
+    return if @optimized and not force
     [:thumb, :preview, :embedded].each do |size|
       Optimize.file(filename(size))
     end
