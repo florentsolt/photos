@@ -1,7 +1,0 @@
-- @photos.each do |photo|
-  - if @album.config(:section) and not @album.config(:section)[photo.id].nil?
-    .section
-      %img{:src => "/img/transparent.gif"}
-      .caption=@album.config(:section)[photo.id]
-  %a.item{:id => photo.id.to_i, :href => original(photo)}<>
-    %img.lazy{:src => embedded(photo), :"data-original" => thumb(photo), :width => photo.size(:thumb).x, :height => photo.size(:thumb).y}

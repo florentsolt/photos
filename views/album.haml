@@ -13,9 +13,26 @@
   #desc= h @album.config(:desc)
 
 #container
-  = haml(:page)
+  - @photos.each do |photo|
+    - if @album.config(:section) and not @album.config(:section)[photo.id].nil?
+      .section
+        %img{:src => "/img/transparent.gif"}
+        .caption=@album.config(:section)[photo.id]
+    %a.item{:href => original(photo)}<>
+      %img.lazy{:src => embedded(photo), :"data-original" => thumb(photo), :width => photo.size(:thumb).x, :height => photo.size(:thumb).y}
 
 :javascript
+
+  var items = #{@gallery.to_json};
+
+  var setHash = function() {
+    var index = $('#swipebox-slider .slide').index($( '#swipebox-slider .slide.current' ));
+    if (index >= 0) {
+      window.location.hash = index + 1;
+    } else {
+      window.location.hash = 'gallery';
+    }
+  };
 
   $("#container").justifiedGallery({
     rowHeight: #{@album.config(:thumb)} / 1.5,
@@ -24,79 +41,28 @@
     cssAnimation: true,
     lastRow: "nojustify"
   }).on('jg.complete', function() {
-    $("img.lazy").lazyload();
+    $(".lazy").lazyload();
+    $(".item").each(function(i, item) {
+      $(item).click(function(e) {
+        e.preventDefault();
+        $.swipebox(items, {
+          initialIndexOnArray: i,
+          nextSlide: setHash,
+          prevSlide: setHash,
+          afterOpen: setHash,
+          afterClose: setHash
+        });
+      }).attr('id', i + 1);
+    });
   });
-
-  var items = #{@gallery.to_json};
-
-  $('#container').magnificPopup({
-    delegate: 'a',
-    type: 'image',
-    gallery:{
-      enabled:true,
-      tCounter: ''
-    },
-    callbacks:{
-      change: function() {
-        window.location.hash = this.index;
-      },
-      beforeOpen: function() {
-        this.items = items;
-      },
-      open: function() {
-        $("body").swipe("enable");
-      },
-      close: function() {
-        window.location.hash = 'gallery';
-        $("body").swipe("disable");
-      }
-    },
-  });
-
-  $("body").swipe({
-    swipeLeft:function(event, direction, distance, duration, fingerCount) {
-      $('#container').magnificPopup('next');
-    },
-    swipeRight:function(event, direction, distance, duration, fingerCount) {
-      $('#container').magnificPopup('prev');
-    },
-    swipeDown:function(event, direction, distance, duration, fingerCount) {
-      $.magnificPopup.instance.close();
-    },
-    swipeUp:function(event, direction, distance, duration, fingerCount) {
-      $.magnificPopup.instance.close();
-    },
-    allowPageScroll: 'none'
-  });
-
 
   var direct = parseInt(window.location.hash.substr(1), 10);
   if (direct >= 0) {
-    $('#container').magnificPopup('open');
-    $('#container').magnificPopup('goTo', direct);
+    $.swipebox(items, {
+      initialIndexOnArray: direct - 1,
+      nextSlide: setHash,
+      prevSlide: setHash,
+      afterOpen: setHash,
+      afterClose: setHash
+    });
   }
-
-  /*
-  var page = 1;
-  var end = false;
-  var wait = false;
-  $(window).scroll(function() {
-      if(end === false && wait === false && $(window).scrollTop() + $(window).height() + #{@album.config(:thumb)} >= $(document).height()) {
-        wait = true;
-        $('<div>').load("/#{@album.name}/page/" + page, function(html, status) {
-          if (status == 'error') {
-            if (html == 'No more pictures') {
-              end = true;
-            } else {
-              // Do not page++, that's it
-            }
-          } else {
-            $("#container").append($(this).html());
-            $('#container').justifiedGallery('norewind');
-            page++;
-          }
-          wait = false;
-        });
-      }
-  });
-  */

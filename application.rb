@@ -186,29 +186,7 @@ get '/:name/?' do
       @photos = @album.photos.values
     end
     @gallery = @photos.map do |photo|
-      {:src => preview(photo)}
+      {:href => preview(photo)}
     end
-    # @photos = @photos[0,@album.config(:page)] || []
-
     haml :album
-end
-
-get '/:name/page/:page' do
-  @album = Lib::Album.load params[:name]
-  password?
-
-  size = @album.config(:page)
-  page = params[:page].to_i
-
-  if @album.reverse?
-    @photos = @album.photos.values.reverse
-  else
-    @photos = @album.photos.values
-  end
-  # @photos = @photos[page * size, size] || []
-  if @photos.empty?
-    halt 404, "No more pictures"
-  else
-    haml :page, :layout => false
-  end
 end

@@ -64,7 +64,7 @@ class Photo
 
   def optimize!(force = false)
     return if @optimized and not force
-    [:thumb, :preview, :embedded].each do |size|
+    [:thumb, :preview].each do |size|
       Optimize.file(filename(size))
     end
     @optimized = true
@@ -80,18 +80,19 @@ class Photo
     image = ImageSorcery.gm(filename(:original))
 
     if not File.exists? filename(:embedded) or force
-      image.convert(filename(:embedded), quality: 20, thumbnail: "x42^")
       puts "Create #{File.basename(filename(:embedded))}"
+      image.convert(filename(:embedded), thumbnail: "x42^")
+      Optimize.gif(filename(:embedded), 50)
     end
 
     if not File.exists? filename(:thumb) or force
-      image.convert(filename(:thumb), quality: quality, thumbnail: "x#{thumb}^")
       puts "Create #{File.basename(filename(:thumb))}"
+      image.convert(filename(:thumb), quality: quality, thumbnail: "x#{thumb}^")
     end
 
     if not File.exists? filename(:preview) or force
-      image.convert(filename(:preview), quality: quality, scale: preview)
       puts "Create #{File.basename(filename(:preview))}"
+      image.convert(filename(:preview), quality: quality, scale: preview)
     end
   end
 

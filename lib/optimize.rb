@@ -6,8 +6,6 @@ module Optimize
     send(ext, filename)
   end
 
-  private
-
   def self.jpg(filename)
     puts "Optimize JPG #{File.basename(filename)}"
     system "jpegtran -optimize -copy none -progressive -outfile '#{filename}' '#{filename}'"
@@ -18,9 +16,9 @@ module Optimize
     system "pngcrush -q '#{filename}' '#{filename}.new'; mv '#{filename}.new' '#{filename}'"
   end
 
-  def self.gif(filename)
+  def self.gif(filename, colors = 256)
     puts "Optimize GIF #{File.basename(filename)}"
-    system "gifsicle -b '#{filename}'"
+    system "gifsicle -b --colors #{colors} '#{filename}'"
   end
 end
 end
