@@ -88,7 +88,7 @@ helpers do
   end
 
   def embedded(photo)
-    "data:image/gif;base64,#{Base64.encode64(File.read(photo.filename(:embedded)))}"
+    "data:image/jpeg;base64,#{Base64.encode64(File.read(photo.filename(:embedded)))}"
   end
 end
 

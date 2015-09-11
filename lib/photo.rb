@@ -27,7 +27,7 @@ class Photo
     when :original
       "#{@album.name}-#{@id}.#{@ext}"
     when :embedded
-      "embedded-#{@id}.gif"
+      "embedded-#{@id}.jpg"
     when :thumb
       "thumb-#{@id}.#{@ext}"
     when :preview
@@ -78,21 +78,22 @@ class Photo
     preview = @album.config(:preview)
 
     image = ImageSorcery.gm(filename(:original))
-
-    if not File.exists? filename(:embedded) or force
-      puts "Create #{File.basename(filename(:embedded))}"
-      image.convert(filename(:embedded), thumbnail: "x42^")
-      Optimize.gif(filename(:embedded), 50)
+    if not File.exists? filename(:preview) or force
+      puts "Create #{File.basename(filename(:preview))}"
+      image.convert(filename(:preview), quality: quality, scale: preview)
     end
 
+    image = ImageSorcery.gm(filename(:preview))
     if not File.exists? filename(:thumb) or force
       puts "Create #{File.basename(filename(:thumb))}"
       image.convert(filename(:thumb), quality: quality, thumbnail: "x#{thumb}^")
     end
 
-    if not File.exists? filename(:preview) or force
-      puts "Create #{File.basename(filename(:preview))}"
-      image.convert(filename(:preview), quality: quality, scale: preview)
+    image = ImageSorcery.gm(filename(:thumb))
+    if not File.exists? filename(:embedded) or force
+      puts "Create #{File.basename(filename(:embedded))}"
+      image.convert(filename(:embedded), quality: "10", colors: "50", thumbnail: "x42^")
+      Optimize.jpg(filename(:embedded))
     end
   end
 
