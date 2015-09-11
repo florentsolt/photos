@@ -208,14 +208,14 @@ module Lib
         samples.each do |s|
           filename = self.samples.sub('.png', "#{i}.png");
           image = ImageSorcery.gm(config(:path) / s.uri(:thumb))
-          image.convert(filename, quality: self.config(:quality), thumbnail: "50^", gravity: "center", extent: '50x50')
+          image.convert(filename, quality: self.config(:quality), thumbnail: "80^", gravity: "center", extent: '80x80')
           samples[i - 1] = filename
           i += 1
         end
 
         image = ImageSorcery.gm(self.samples)
         image.montage(samples,
-                      background: '#000000FF', tile: '5x1', geometry: '50x50',
+                      background: '#000000FF', tile: '5x1', geometry: '80x80',
                       borderwidth: 1, bordercolor: '#000000FF', frame: '0x0+0+0')
         Optimize.file(self.samples)
 

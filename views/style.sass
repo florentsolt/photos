@@ -6,7 +6,6 @@ body
   color: #292929
   background-color: #eee
   font-family: sans-serif
-  padding: 0px 80px
 
 .item
   padding: 0px
@@ -65,8 +64,10 @@ body
   background-color: #ccc
   color: black
 
+#wrapper
+  padding: 0px 40px
+
 #container
-  padding: 20px
   text-align: center
 
 .password
@@ -96,44 +97,36 @@ body
 
 #index
   margin: 0px
+  text-align: center
 
   .album
-    display: block
+    display: inline-block
     text-decoration: none
     outline: none
-    margin: 20px auto
+    margin: 20px
     background-color: #eee
-    height: 52px
-    width: 70%
-    background-position: left center
+    width: 402px
+    background-position: center top
     background-repeat: no-repeat
+    background-color: rgba(0, 0, 0, 0.1)
     box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.35)
-    position: relative
+    padding-top: 82px
 
     .title, .desc
-      margin-left: 270px
+      margin: 2px
+      overflow: hidden
+      white-space: nowrap
       color: black
       text-align: left
 
       font-family: Georgia, serif
-      font-size: 22px
-      font-weight: normal
+      font-size: 16px
+      font-weight: bold
       text-transform: normal
       letter-spacing: normal
-      line-height: 33px
 
     .desc
       font-style: italic
       font-weight: normal
       font-size: 14px
       line-height: 15px
-
-    .time
-      position: absolute
-      top: 5px
-      right: 5px
-      text-align: right
-      color: #444
-      font-size: 12px
-      font-family: sans-serif
-      font-style: italic

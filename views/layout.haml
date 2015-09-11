@@ -1,11 +1,11 @@
 !!!
 %html
   %head
-    -if not @album.nil?
+    - if not @album.nil?
       %title= @album.config(:title)
       %link{:href => @album.font_href, :rel => 'stylesheet', :type => 'text/css'}
     %meta{'http-equiv' => 'content-type', :content => 'text/html; charset=utf-8'}
-    %meta{:name => 'viewport', :content => "width=1000"}
+    %meta{:name => 'viewport', :content => "width=#{@album.nil? && 500 || 840}"}
     %script{:type => 'text/javascript', :src => "http://code.jquery.com/jquery-2.1.4.min.js"}
     %script{:type => 'text/javascript', :src => "/js?#{Time.now.strftime "%Y%m%d"}"}
     %link{:href => '/favicon.ico', :rel => 'shortcut icon'}
@@ -15,9 +15,7 @@
     %link{:href => "/css/swipebox.css", :rel => 'stylesheet', :type => 'text/css'}
 
   %body
-
-    #content
-      = yield
+    = yield
 
     - if settings.production?
       :javascript
