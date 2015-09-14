@@ -14,7 +14,7 @@
     %link{:href => "/css/justifiedGallery.min.css", :rel => 'stylesheet', :type => 'text/css'}
     %link{:href => "/css/swipebox.css", :rel => 'stylesheet', :type => 'text/css'}
 
-  %body
+  %body{:class => touch_device? && "touch_device" || ""}
     = yield
 
     - if settings.production?

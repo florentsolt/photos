@@ -25,6 +25,10 @@ helpers do
   include Rack::Utils
   alias_method :h, :escape_html
 
+  def touch_device?
+    !user_agent.nil? && user_agent =~ /\b(Android|iPhone|iPad|Windows Phone|Opera Mobi|Kindle|BackBerry|PlayBook)\b/i
+  end
+
   def password?
     if @album.nil?
       if Lib::Index.protected?
