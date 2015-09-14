@@ -26,6 +26,7 @@ helpers do
   alias_method :h, :escape_html
 
   def touch_device?
+    user_agent = env["HTTP_USER_AGENT"]
     !user_agent.nil? && user_agent =~ /\b(Android|iPhone|iPad|Windows Phone|Opera Mobi|Kindle|BackBerry|PlayBook)\b/i
   end
 
