@@ -86,7 +86,8 @@ class Photo
     image = ImageSorcery.gm(filename(:preview))
     if not File.exists? filename(:thumb) or force
       puts "Create #{File.basename(filename(:thumb))}"
-      image.convert(filename(:thumb), quality: quality, thumbnail: "x#{thumb}^")
+      # double the thumb size for retina
+      image.convert(filename(:thumb), quality: quality, thumbnail: "x#{(thumb * 1.5).to_i}^")
     end
 
     image = ImageSorcery.gm(filename(:thumb))
