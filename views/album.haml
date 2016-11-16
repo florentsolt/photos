@@ -19,7 +19,7 @@
         .section
           %img{:src => "/img/transparent.gif"}
           .caption=@album.config(:section)[photo.id]
-      %a.item{:href => original(photo)}<>
+      %a.item{:id => photo.id, :href => original(photo)}<>
         %img.lazy{:src => embedded(photo), :"data-original" => thumb(photo), :width => photo.size(:thumb).x, :height => photo.size(:thumb).y}
 
 :javascript
@@ -29,7 +29,7 @@
   var setHash = function() {
     var index = $('#swipebox-slider .slide').index($( '#swipebox-slider .slide.current' ));
     if (index >= 0) {
-      window.location.hash = index + 1;
+      window.location.hash = ("00000" + index).substr(-5, 5);
     } else {
       window.location.hash = 'gallery';
     }
@@ -57,14 +57,14 @@
           afterOpen: setHash,
           afterClose: setHash
         });
-      }).attr('id', i + 1);
+      })
     });
   });
 
   var direct = parseInt(window.location.hash.substr(1), 10);
   if (direct >= 0) {
     $.swipebox(items, {
-      initialIndexOnArray: direct - 1,
+      initialIndexOnArray: direct,
       nextSlide: setHash,
       prevSlide: setHash,
       afterOpen: setHash,
