@@ -80,6 +80,14 @@ helpers do
     end
   end
 
+  def gallery(album)
+    "#{request.scheme}://#{domain}/#{@album.name}/"
+  end
+
+  def samples(album)
+    "#{request.scheme}://#{domain}/#{@album.name}/samples"
+  end
+
   def original(photo)
     "#{request.scheme}://#{domain}/download/#{@album.name}/#{photo.id}/original.#{photo.ext}"
   end
@@ -170,7 +178,7 @@ end
 end
 
 get "/:name/samples" do
-  password? # ask before setting @album for the master password
+  # password? # ask before setting @album for the master password
   @album = Lib::Album.load params[:name]
   deliver @album.name / 'samples.png', :png
 end

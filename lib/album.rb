@@ -183,40 +183,35 @@ module Lib
     def samples!(force = false)
       require 'image_sorcery'
 
+      count = 8
+
       if not File.exists? self.samples or force
-        if photos.count <= 5
+        if photos.count <= count
           keys = []
-          0.upto(4) do |i|
+          0.upto(count - 1) do |i|
             keys << Photo::FORMAT % (i % photos.count)
           end
         else
-          size = photos.count / 5
-          middles = [
-            0..(size - 1),
-            size..(size*2 - 1),
-            (size*2)..(size*3 - 1),
-            (size*3)..(size*4 - 1),
-            (size*4)..(photos.count - 1)
-          ].collect do |range|
-            range.first + (range.last - range.first) / 2
-          end
-          keys = (0..4).to_a.collect{|i| Photo::FORMAT % (size / 2 + size * i)}
+          keys = photos.keys.sample(count)
         end
         samples = photos.values_at(*keys)
 
         i = 1
+
+        size = 200
+
         samples.each do |s|
           filename = self.samples.sub('.png', "#{i}.png");
           image = ImageSorcery.gm(config(:path) / s.uri(:thumb))
-          image.convert(filename, quality: self.config(:quality), thumbnail: "80^", gravity: "center", extent: '80x80')
+          image.convert(filename, quality: self.config(:quality), thumbnail: "#{size}^", gravity: "center", extent: "#{size}x#{size}")
           samples[i - 1] = filename
           i += 1
         end
 
         image = ImageSorcery.gm(self.samples)
         image.montage(samples,
-                      background: '#000000FF', tile: '5x1', geometry: '80x80',
-                      borderwidth: 1, bordercolor: '#000000FF', frame: '0x0+0+0')
+                      background: '#000000FF', tile: '4x2', geometry: "#{size}x#{size}+0+0",
+                      borderwidth: 1, bordercolor: '#000000FF')
         Optimize.file(self.samples)
 
         samples.each do |sample|
