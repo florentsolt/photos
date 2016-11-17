@@ -11,6 +11,7 @@
       %meta{:property => "og:description", :content => @album.config(:desc)}
       %meta{:property => "og:image", :content => samples(@album)}
 
+      %meta{:property => "twitter:card", :content => 'summary_large_image'}
       %meta{:property => "twitter:site", :content => '@florentsolt'}
       %meta{:property => "twitter:url", :content => gallery(@album)}
       %meta{:property => "twitter:title", :content => @album.config(:title)}
