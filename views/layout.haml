@@ -4,11 +4,18 @@
     - if not @album.nil?
       %title= @album.config(:title)
       %link{:href => @album.font_href, :rel => 'stylesheet', :type => 'text/css'}
+
       %meta{:property => "og:type", :content => "article"}
       %meta{:property => "og:url", :content => gallery(@album)}
       %meta{:property => "og:title", :content => @album.config(:title)}
       %meta{:property => "og:description", :content => @album.config(:desc)}
       %meta{:property => "og:image", :content => samples(@album)}
+
+      %meta{:property => "twitter:site", :content => '@florentsolt'}
+      %meta{:property => "twitter:url", :content => gallery(@album)}
+      %meta{:property => "twitter:title", :content => @album.config(:title)}
+      %meta{:property => "twitter:description", :content => @album.config(:desc)}
+      %meta{:property => "twitter:image", :content => samples(@album)}
 
     %meta{'http-equiv' => 'content-type', :content => 'text/html; charset=utf-8'}
     %meta{:name => 'viewport', :content => "width=#{@album.nil? && 400 || 840}"}

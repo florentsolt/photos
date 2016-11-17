@@ -99,7 +99,7 @@ module Lib
     end
 
     def samples
-      config(:path) / @name / 'samples.png'
+      config(:path) / @name / 'samples.jpg'
     end
 
     def sets
@@ -201,7 +201,7 @@ module Lib
         size = 200
 
         samples.each do |s|
-          filename = self.samples.sub('.png', "#{i}.png");
+          filename = self.samples.sub('.jpg', "#{i}.jpg");
           image = ImageSorcery.gm(config(:path) / s.uri(:thumb))
           image.convert(filename, quality: self.config(:quality), thumbnail: "#{size}^", gravity: "center", extent: "#{size}x#{size}")
           samples[i - 1] = filename
@@ -210,7 +210,7 @@ module Lib
 
         image = ImageSorcery.gm(self.samples)
         image.montage(samples,
-                      background: '#000000FF', tile: '4x2', geometry: "#{size}x#{size}+0+0",
+                      background: '#D7D7D7FF', tile: '4x2', geometry: "#{size}x#{size}+0+0",
                       borderwidth: 1, bordercolor: '#000000FF')
         Optimize.file(self.samples)
 

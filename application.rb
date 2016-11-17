@@ -180,7 +180,7 @@ end
 get "/:name/samples" do
   # password? # ask before setting @album for the master password
   @album = Lib::Album.load params[:name]
-  deliver @album.name / 'samples.png', :png
+  deliver @album.name / 'samples.jpg', :jpg
 end
 
 get "/:name/zip" do
