@@ -43,7 +43,8 @@ class Photo
 
   def timestamp
     require 'exifr'
-    EXIFR::JPEG.new(filename(:original)).date_time.to_i
+    exif = EXIFR::JPEG.new(filename(:original))
+    (exif.date_time_original || exif.date_time).to_i
   end
 
   def size(type)
