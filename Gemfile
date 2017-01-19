@@ -4,7 +4,7 @@ gem "curb"
 gem "image_sorcery", ">=1.1.0"
 gem "sinatra"
 gem "sinatra-contrib"
-gem "sinatra-r18n"
+gem "sinatra-r18n", "2.1.2"
 gem "rubyzip", '>=1.0'
 gem "haml"
 gem "sass"
