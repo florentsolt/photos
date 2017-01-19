@@ -198,8 +198,5 @@ get '/:name/?' do
     else
       @photos = @album.photos.values
     end
-    @gallery = @photos.map do |photo|
-      {:href => preview(photo)}
-    end
     haml :album
 end
