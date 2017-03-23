@@ -100,8 +100,12 @@ helpers do
     "#{request.scheme}://#{domain}/#{@album.name}/#{photo.id}/thumb.#{photo.ext}"
   end
 
-  def embedded(photo)
-    "data:image/jpeg;base64,#{Base64.encode64(File.read(photo.filename(:embedded)))}"
+  def embedded(photo, encode = true)
+    if encode
+      "data:image/jpeg;base64,#{Base64.encode64(File.read(photo.filename(:embedded)))}"
+    else
+      "#{request.scheme}://#{domain}/#{@album.name}/#{photo.id}/embedded.#{photo.ext}"
+    end
   end
 end
 
@@ -161,7 +165,7 @@ get '/js' do
   $JS
 end
 
-[:thumb, :preview, :original].each do |type|
+[:embedded, :thumb, :preview, :original].each do |type|
   get "/:name/:id/#{type}.:ext" do
     @album = Lib::Album.load params[:name]
     password?
@@ -198,5 +202,6 @@ get '/:name/?' do
     else
       @photos = @album.photos.values
     end
+
     haml :album
 end

@@ -19,24 +19,35 @@
         .section
           %img{:src => "/img/transparent.gif"}
           .caption=@album.config(:section)[photo.id]
-      %a.item{:id => photo.id, :href => preview(photo), :"data-download-url" => original(photo)}<>
+      %a.item{:"data-fancybox" => "photo", :id => "photo-#{photo.id.to_i}", :href => preview(photo), :"data-width" => photo.size(:preview).x, :"data-height" => photo.size(:preview).y, :"data-download-url" => original(photo)}<>
         %img.lazy{:src => embedded(photo), :"data-original" => thumb(photo), :width => photo.size(:thumb).x, :height => photo.size(:thumb).y}
 
 :javascript
 
+  $("img.lazy").lazyload();
+
   $("#container").justifiedGallery({
     rowHeight: #{@album.config(:thumb)} / 1.5,
     margins: 5,
-    waitThumbnailsLoad: true,
-    cssAnimation: true,
+    waitThumbnailsLoad: false,
+    cssAnimation: false,
     lastRow: "nojustify"
-  }).on('jg.complete', function() {
-    $(".lazy").lazyload({
-      load: function() {
-        $(this).removeClass('lazy');
-      }
-    });
   });
 
-  lightGallery(document.getElementById('container'));
+  $.fancybox.defaults.hash = "photo";
+  $.fancybox.defaults.thumbs = false;
+  $.fancybox.defaults.loop = false;
+  $.fancybox.defaults.opacity = false;
+  // $.fancybox.defaults.image.preload = false;
+
+  $.fancybox.defaults.onInit = function( instance ) {
+    instance.$refs.downloadButton = $('<a class="fancybox-button"><div class="download icon"></div></a>')
+      .appendTo( instance.$refs.buttons );
+  }
+
+  $.fancybox.defaults.beforeMove = function( instance, current ) {
+    if (current.opts.$orig) {
+      instance.$refs.downloadButton.attr('href', current.opts.$orig.attr('data-download-url'));
+    }
+  }
 
