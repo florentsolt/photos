@@ -48,6 +48,7 @@
   $.fancybox.defaults.beforeMove = function( instance, current ) {
     if (current.opts.$orig) {
       instance.$refs.downloadButton.attr('href', current.opts.$orig.attr('data-download-url'));
+      instance.$refs.downloadButton.attr('target', $('body').hasClass('touch_device') ? '_blank' : '_self');
     }
   }
 
