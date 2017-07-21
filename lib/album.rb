@@ -202,7 +202,7 @@ module Lib
 
         samples.each do |s|
           filename = self.samples.sub('.jpg', "#{i}.jpg");
-          image = ImageSorcery.gm(config(:path) / s.uri(:thumb))
+          image = ImageSorcery.gm(s.filename(:thumb))
           image.convert(filename, quality: self.config(:quality), thumbnail: "#{size}^", gravity: "center", extent: "#{size}x#{size}")
           samples[i - 1] = filename
           i += 1
@@ -245,7 +245,7 @@ module Lib
     end
 
     def clear!(keep_originals = false)
-      [DUMP_FILE, "archive.zip", "samples.png"].each do |file|
+      [DUMP_FILE, "archive.zip", "samples.jpg"].each do |file|
         if File.exists? config(:path) / @name / file
           puts "Delete #{file}"
           File.unlink config(:path) / @name / file
