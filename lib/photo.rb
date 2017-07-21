@@ -68,6 +68,7 @@ class Photo
     [:thumb, :preview].each do |size|
       Optimize.file(filename(size))
     end
+    Optimize.jpg(filename(:embedded))
     @optimized = true
   end
 
@@ -78,25 +79,42 @@ class Photo
     thumb = @album.config(:thumb)
     preview = @album.config(:preview)
 
-    image = ImageSorcery.gm(filename(:original))
+#    image = ImageSorcery.gm(filename(:original))
+#    if not File.exists? filename(:preview) or force
+#      puts "Create #{File.basename(filename(:preview))}"
+#      image.convert(filename(:preview), quality: quality, scale: preview)
+#    end
+
     if not File.exists? filename(:preview) or force
       puts "Create #{File.basename(filename(:preview))}"
-      image.convert(filename(:preview), quality: quality, scale: preview)
+      system "vipsthumbnail -s #{preview} #{filename(:original)} -o #{filename(:preview)}[Q=#{quality}]"
     end
 
-    image = ImageSorcery.gm(filename(:preview))
+
+#    image = ImageSorcery.gm(filename(:preview))
+#    if not File.exists? filename(:thumb) or force
+#      puts "Create #{File.basename(filename(:thumb))}"
+#      # double the thumb size for retina
+#      image.convert(filename(:thumb), quality: quality, thumbnail: "x#{(thumb * 1.5).to_i}^")
+#    end
+
     if not File.exists? filename(:thumb) or force
       puts "Create #{File.basename(filename(:thumb))}"
-      # double the thumb size for retina
-      image.convert(filename(:thumb), quality: quality, thumbnail: "x#{(thumb * 1.5).to_i}^")
+      system "vipsthumbnail -s x#{(thumb * 1.5).to_i}  #{filename(:preview)} -o #{filename(:thumb)}[Q=#{quality}]"
     end
 
-    image = ImageSorcery.gm(filename(:thumb))
+#    image = ImageSorcery.gm(filename(:thumb))
+#    if not File.exists? filename(:embedded) or force
+#      puts "Create #{File.basename(filename(:embedded))}"
+#      image.convert(filename(:embedded), quality: "10", colors: "50", thumbnail: "x42^")
+#      Optimize.jpg(filename(:embedded))
+#    end
+    
     if not File.exists? filename(:embedded) or force
       puts "Create #{File.basename(filename(:embedded))}"
-      image.convert(filename(:embedded), quality: "10", colors: "50", thumbnail: "x42^")
-      Optimize.jpg(filename(:embedded))
+      system "vipsthumbnail -s x42  #{filename(:thumb)} -o #{filename(:embedded)}[Q=10]"
     end
+
   end
 
   def clear!(keep_originals = false)
