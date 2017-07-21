@@ -19,8 +19,8 @@
         .section
           %img{:src => "/img/transparent.gif"}
           .caption=@album.config(:section)[photo.id]
-      %a.item{:"data-fancybox" => "photo", :id => "photo-#{photo.id.to_i}", :href => preview(photo), :"data-width" => photo.size(:preview).x, :"data-height" => photo.size(:preview).y, :"data-download-url" => original(photo)}<>
-        %img.lazy{:src => embedded(photo), :"data-original" => thumb(photo), :width => photo.size(:thumb).x, :height => photo.size(:thumb).y}
+      %a.item{:"data-fancybox" => "photo", :id => "photo-#{photo.id.to_i}", :href => "/" + photo.uri(:preview), :"data-width" => photo.size(:preview).x, :"data-height" => photo.size(:preview).y, :"data-download-url" => "/" + photo.uri(:original)}<>
+        %img.lazy{:"data-original" => "/" + photo.uri(:thumb), :width => photo.size(:thumb).x, :height => photo.size(:thumb).y}
 
 :javascript
 

@@ -55,23 +55,6 @@ helpers do
     end
   end
 
-  def deliver(file, type, download = false, filename = nil)
-    filename ||= File.basename(file)
-    headers "Content-Disposition" => "attachment; filename=#{filename}" if download
-    content_type type
-    if settings.production?
-      file = "/direct/" + file
-      headers "X-Accel-Redirect" => file
-    else
-      etag "#{file}@#{File.mtime(Lib::Config.default(:path) / file)}"
-      if not download
-        send_file Lib::Config.default(:path) / file, :type => type
-      else
-        send_file Lib::Config.default(:path) / file, :type => type, :filename => filename
-      end
-    end
-  end
-
   def domain
     if request.port == 80
       request.host
@@ -80,32 +63,14 @@ helpers do
     end
   end
 
+  # Need full url for layout.haml (also used in index.haml)
   def gallery(album)
-    "#{request.scheme}://#{domain}/#{@album.name}/"
+    "#{request.scheme}://#{domain}/#{album.name}/"
   end
 
+  # Need full url for layout.haml (also used in index.haml)
   def samples(album)
-    "#{request.scheme}://#{domain}/#{@album.name}/samples"
-  end
-
-  def original(photo)
-    "#{request.scheme}://#{domain}/download/#{@album.name}/#{photo.id}/original.#{photo.ext}"
-  end
-
-  def preview(photo)
-    "#{request.scheme}://#{domain}/#{@album.name}/#{photo.id}/preview.#{photo.ext}"
-  end
-
-  def thumb(photo)
-    "#{request.scheme}://#{domain}/#{@album.name}/#{photo.id}/thumb.#{photo.ext}"
-  end
-
-  def embedded(photo, encode = true)
-    if encode
-      "data:image/jpeg;base64,#{Base64.encode64(File.read(photo.filename(:embedded)))}"
-    else
-      "#{request.scheme}://#{domain}/#{@album.name}/#{photo.id}/embedded.#{photo.ext}"
-    end
+    "#{request.scheme}://#{domain}/#{album.name}/samples"
   end
 end
 
@@ -165,32 +130,37 @@ get '/js' do
   $JS
 end
 
-[:embedded, :thumb, :preview, :original].each do |type|
+get "/:name/:id/original.:ext" do
+  @album = Lib::Album.load params[:name]
+  password?
+  @photo = @album.photos[params[:id]]
+  headers "Content-Disposition" => "attachment; filename=#{File.basename(@photo.filename(:original))}"
+  send_file @photo.filename(:original), :type => @photo.ext
+end
+
+[:thumb, :preview].each do |type|
   get "/:name/:id/#{type}.:ext" do
     @album = Lib::Album.load params[:name]
     password?
     @photo = @album.photos[params[:id]]
-    deliver @photo.uri(type), @photo.ext
-  end
-
-  get "/download/:name/:id/#{type}.:ext" do
-    @album = Lib::Album.load params[:name]
-    password?
-    @photo = @album.photos[params[:id]]
-    deliver @photo.uri(type), @photo.ext, true, "#{@album.name}-#{type}-#{@photo.id}.#{@photo.ext}"
+    # Dynamic generation is not a so good idea
+    # @photo.thumbs!
+    # @photo.optimize!
+    send_file @photo.filename(type), :type => @photo.ext
   end
 end
 
 get "/:name/samples" do
   # password? # ask before setting @album for the master password
   @album = Lib::Album.load params[:name]
-  deliver @album.name / 'samples.jpg', :jpg
+  send_file @album.samples, :type => :jpg
 end
 
 get "/:name/zip" do
   @album = Lib::Album.load params[:name]
   password?
-  deliver @album.name / @album.zip, :zip, true, "#{@album.name}.zip"
+  headers "Content-Disposition" => "attachment; filename=#{@album.name}.zip"
+  send_file @album.zip, :type => :zip
 end
 
 get '/:name/?' do

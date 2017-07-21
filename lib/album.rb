@@ -234,7 +234,7 @@ module Lib
     end
 
     def zip
-      'archive.zip'
+      config(:path) / @name / 'archive.zip'
     end
 
     def optimize!(force = false)

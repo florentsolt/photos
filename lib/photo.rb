@@ -4,6 +4,9 @@ class Photo
   FORMAT = "%05d"
   SIZES = [:original, :thumb, :preview]
 
+  CACHE = File.join(__dir__, '..', 'public', 'cache')
+  Dir.mkdir CACHE if not File.directory? CACHE
+
   def initialize(album, id, ext = false)
     @album = album
     @id = id
@@ -23,22 +26,24 @@ class Photo
   # Move all that code to filename, and implement uri (to be used instead of
   # thumbs helpers
   def uri(type)
-    @album.name / case type
+    case type
     when :original
-      "#{@album.name}-#{@id}.#{@ext}"
-    when :embedded
-      "embedded-#{@id}.jpg"
+      @album.name / "#{@album.name}-#{@id}.#{@ext}"
     when :thumb
-      "thumb-#{@id}.#{@ext}"
+      :cache / "#{@album.name}-thumb-#{@id}.#{@ext}"
     when :preview
-      "preview-#{@id}.#{@ext}"
+      :cache / "#{@album.name}-preview-#{@id}.#{@ext}"
     else
       throw "Unknown file type #{type.inspect}"
     end
   end
 
   def filename(type)
-    @album.config(:path) / uri(type)
+    if type === :original
+      @album.config(:path) / uri(type)
+    else
+      CACHE / '..' / uri(type)
+    end
   end
 
   def timestamp
@@ -68,53 +73,23 @@ class Photo
     [:thumb, :preview].each do |size|
       Optimize.file(filename(size))
     end
-    Optimize.jpg(filename(:embedded))
     @optimized = true
   end
 
   def thumbs!(force = false)
-    require 'image_sorcery'
-
     quality = @album.config(:quality)
     thumb = @album.config(:thumb)
     preview = @album.config(:preview)
-
-#    image = ImageSorcery.gm(filename(:original))
-#    if not File.exists? filename(:preview) or force
-#      puts "Create #{File.basename(filename(:preview))}"
-#      image.convert(filename(:preview), quality: quality, scale: preview)
-#    end
 
     if not File.exists? filename(:preview) or force
       puts "Create #{File.basename(filename(:preview))}"
       system "vipsthumbnail -s #{preview} #{filename(:original)} -o #{filename(:preview)}[Q=#{quality}]"
     end
 
-
-#    image = ImageSorcery.gm(filename(:preview))
-#    if not File.exists? filename(:thumb) or force
-#      puts "Create #{File.basename(filename(:thumb))}"
-#      # double the thumb size for retina
-#      image.convert(filename(:thumb), quality: quality, thumbnail: "x#{(thumb * 1.5).to_i}^")
-#    end
-
     if not File.exists? filename(:thumb) or force
       puts "Create #{File.basename(filename(:thumb))}"
       system "vipsthumbnail -s x#{(thumb * 1.5).to_i}  #{filename(:preview)} -o #{filename(:thumb)}[Q=#{quality}]"
     end
-
-#    image = ImageSorcery.gm(filename(:thumb))
-#    if not File.exists? filename(:embedded) or force
-#      puts "Create #{File.basename(filename(:embedded))}"
-#      image.convert(filename(:embedded), quality: "10", colors: "50", thumbnail: "x42^")
-#      Optimize.jpg(filename(:embedded))
-#    end
-    
-    if not File.exists? filename(:embedded) or force
-      puts "Create #{File.basename(filename(:embedded))}"
-      system "vipsthumbnail -s x42  #{filename(:thumb)} -o #{filename(:embedded)}[Q=10]"
-    end
-
   end
 
   def clear!(keep_originals = false)

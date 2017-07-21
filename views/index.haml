@@ -1,5 +1,5 @@
 #index
   - Lib::Index.albums.each do |album|
-    %a.album{:href => "/#{album.name}", :style => "background-image: url(/#{album.name}/samples)"}
+    %a.album{:href => gallery(album), :style => "background-image: url(#{samples(album)})"}
       .title= album.config(:title)
       .desc= album.config(:desc)
