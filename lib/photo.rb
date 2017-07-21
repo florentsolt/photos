@@ -93,7 +93,7 @@ class Photo
   end
 
   def clear!(keep_originals = false)
-    files = [filename(:thumb), filename(:preview), filename(:embedded)]
+    files = [filename(:thumb), filename(:preview)]
     files << filename(:original) if not keep_originals
     files.each do |file|
       if File.exists? file
