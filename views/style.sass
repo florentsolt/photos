@@ -99,14 +99,9 @@ body
     text-decoration: none
     outline: none
     margin: 20px
-    background-color: #eee
     width: 322px
-    background-size: auto 160px
-    background-position: center top
-    background-repeat: no-repeat
-    background-color: rgba(0, 0, 0, 0.1)
-    box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.35)
-    padding-top: 162px
+    background-color: rgba(255, 255, 255, 0.4)
+    padding: 6px
 
     .title, .desc
       margin: 2px
@@ -118,7 +113,6 @@ body
 
       font-family: Georgia, serif
       font-size: 14px
-      font-weight: bold
       text-transform: normal
       letter-spacing: normal
 
@@ -127,8 +121,12 @@ body
       font-weight: normal
       font-size: 12px
       padding-bottom: 2px
+      color: #999
 
-.download.icon 
+    img
+      width: 100%
+
+.download.icon
   color: white
   position: absolute
   margin-left: 14px
@@ -139,7 +137,7 @@ body
   border: solid 2px currentColor
   border-top: none
 
-.download.icon:before 
+.download.icon:before
   content: ''
   position: absolute
   left: 6px
@@ -148,7 +146,7 @@ body
   height: 10px
   background-color: currentColor
 
-.download.icon:after 
+.download.icon:after
   content: ''
   position: absolute
   left: 4px
@@ -159,5 +157,3 @@ body
   border-right: solid 2px currentColor
   -webkit-transform: rotate(135deg)
   transform: rotate(135deg)
-
-
