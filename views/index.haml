@@ -6,4 +6,6 @@
       .desc= album.config(:desc)
 
 :javascript
-  $("img.lazy").lazyload();
+  $("img.lazy").lazyload({
+    threshold : 200
+});
