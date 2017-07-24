@@ -19,20 +19,13 @@
         .section
           %img{:src => "/img/transparent.gif"}
           .caption=@album.config(:section)[photo.id]
-      %a.item{:"data-fancybox" => "photo", :id => "photo-#{photo.id.to_i}", :href => "/" + photo.uri(:preview), :"data-width" => photo.size(:preview).x, :"data-height" => photo.size(:preview).y, :"data-download-url" => "/" + photo.uri(:original)}<>
-        %img.lazy{:"data-original" => "/" + photo.uri(:thumb), :width => photo.size(:thumb).x, :height => photo.size(:thumb).y}
+      %a.item{:style => "width:#{photo.size(:thumb).x*200/photo.size(:thumb).y}px; flex-grow:#{photo.size(:thumb).x*200/photo.size(:thumb).y}", :"data-fancybox" => "photo", :id => "photo-#{photo.id.to_i}", :href => "/" + photo.uri(:preview), :"data-width" => photo.size(:preview).x, :"data-height" => photo.size(:preview).y, :"data-download-url" => "/" + photo.uri(:original)}<>
+        %div{:style => "padding-bottom:#{photo.size(:thumb).y.to_f/photo.size(:thumb).x*100}%"}
+        %img.lazy{:"data-original" => "/" + photo.uri(:thumb)}
 
 :javascript
 
   $("img.lazy").lazyload();
-
-  $("#container").justifiedGallery({
-    rowHeight: #{@album.config(:thumb)} / 1.5,
-    margins: 1,
-    waitThumbnailsLoad: false,
-    cssAnimation: false,
-    lastRow: "nojustify"
-  });
 
   $.fancybox.defaults.hash = "photo";
   $.fancybox.defaults.thumbs = false;

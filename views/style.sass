@@ -8,16 +8,14 @@ body
   font-family: sans-serif
 
 .item
-  padding: 0px
-  background: transparent
-  outline: none
-  opacity: 0
+  position: relative
+  margin: 1px
 
   img
+    position: absolute
+    top: 0
+    width: 100%
     vertical-align: bottom
-    border: 0px
-    padding: 0px
-    margin: 0px
 
   img:hover
     filter: brightness(140%)
@@ -48,25 +46,16 @@ body
 #zip:hover
   opacity: 1
 
-.justified-gallery .section
-  display: table
-
-.justified-gallery .section .caption
-  display: table-cell !important
-  vertical-align: middle
-  opacity: 1 !important
-  font-size: 20pt
-  text-align: center
-  bottom: auto
-  position: initial
-  background-color: #ccc
-  color: black
-
 #wrapper
   padding: 0px 40px
 
 #container
-  text-align: center
+  display: flex
+  flex-wrap: wrap
+
+#container::after
+  content: ''
+  flex-grow: 999999999
 
 .password
 
