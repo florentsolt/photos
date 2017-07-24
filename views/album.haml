@@ -28,7 +28,7 @@
 
   $("#container").justifiedGallery({
     rowHeight: #{@album.config(:thumb)} / 1.5,
-    margins: 5,
+    margins: 1,
     waitThumbnailsLoad: false,
     cssAnimation: false,
     lastRow: "nojustify"
@@ -51,4 +51,3 @@
       instance.$refs.downloadButton.attr('target', $('body').hasClass('touch_device') ? '_blank' : '_self');
     }
   }
-
