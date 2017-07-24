@@ -6,8 +6,7 @@
 
   - if @album.config(:zip)
     %a#zip{:href => "/#{@album.name}/zip"}
-      .icon-cloud-download
-      = t.download.all
+      .download.icon
 
   #title
     = h @album.config(:title)
