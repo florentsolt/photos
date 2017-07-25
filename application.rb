@@ -12,7 +12,7 @@ require File.join(__dir__, 'lib')
 
 set :sass, {
   :cache_store => Sass::CacheStores::Memory.new,
-  :style => settings.production? ? :compressed : :expanded
+  :style => :compressed
 }
 
 configure :production do
@@ -166,6 +166,8 @@ end
 get '/:name/?' do
     @album = Lib::Album.load params[:name]
     password?
+    @css = sass(:style) + File.read(__dir__ / :public / :css / "jquery.fancybox.min.css")
+    @css += "\n#title, #desc, #zip, .caption {font-family: '#{@album.font_family}', sans-serif !important;}"
 
     if @album.reverse?
       @photos = @album.photos.values.reverse

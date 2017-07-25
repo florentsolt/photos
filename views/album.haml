@@ -1,9 +1,4 @@
 #wrapper
-  :css
-    #title, #desc, #zip, .caption {
-      font-family: '#{@album.font_family}', sans-serif !important;
-    }
-
   - if @album.config(:zip)
     %a#zip{:href => "/#{@album.name}/zip"}
       .icon-cloud-download
