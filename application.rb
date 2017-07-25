@@ -7,8 +7,11 @@ require 'haml'
 require 'sass'
 require 'digest/sha1'
 require 'base64'
+require 'curb'
 
 require File.join(__dir__, 'lib')
+
+FONT_CACHE = {}
 
 set :sass, {
   :cache_store => Sass::CacheStores::Memory.new,
@@ -157,7 +160,9 @@ end
 get '/:name/?' do
     @album = Lib::Album.load params[:name]
     password?
+    FONT_CACHE[@album.font_href] ||= Curl.get(@album.font_href).body_str
     @css = sass(:style) + File.read(__dir__ / :public / :css / "jquery.fancybox.min.css")
+    @css += "\n#{FONT_CACHE[@album.font_href]}"
     @css += "\n#title, #desc, #zip, .caption {font-family: '#{@album.font_family}', sans-serif !important;}"
 
     if @album.reverse?

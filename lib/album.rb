@@ -1,3 +1,5 @@
+require 'curb'
+
 module Lib
   class Album
 
@@ -111,7 +113,6 @@ module Lib
     end
 
     def download!
-      require 'curb'
       files = []
       urls = []
       sets.each do |set|
