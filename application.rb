@@ -51,6 +51,7 @@ helpers do
       headers "Cache-Control" => "no-cache, no-store, must-revalidate"
       headers "Pragma" => "no-cache"
       headers "Expires" => "0"
+      @css = sass(:style)
       halt 403, haml(:password)
     end
   end
@@ -76,6 +77,7 @@ end
 
 get '/' do
   password?
+  @css = sass(:style)
   haml :index
 end
 
@@ -101,17 +103,6 @@ end
   get route do
     status 404
   end
-end
-
-get '/css' do
-  if settings.production?
-    $CSS_SHA1 ||= Digest::SHA1.hexdigest(Dir[File.dirname(__FILE__) / :views / '*.sass'].collect do |css|
-      File.read(css)
-    end.join)
-    etag $CSS_SHA1
-  end
-  content_type :css
-  sass :style
 end
 
 get '/js' do
