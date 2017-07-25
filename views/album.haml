@@ -16,13 +16,9 @@
           .caption=@album.config(:section)[photo.id]
       %a.item{:style => "width:#{photo.size(:thumb).x*200/photo.size(:thumb).y}px; flex-grow:#{photo.size(:thumb).x*200/photo.size(:thumb).y}", :"data-fancybox" => "photo", :id => "photo-#{photo.id.to_i}", :href => "/" + photo.uri(:preview), :"data-width" => photo.size(:preview).x, :"data-height" => photo.size(:preview).y, :"data-download-url" => "/" + photo.uri(:original)}<>
         %div{:style => "padding-bottom:#{photo.size(:thumb).y.to_f/photo.size(:thumb).x*100}%"}
-        %img.lazy{:"data-original" => "/" + photo.uri(:thumb)}
+        %img{:"data-original" => "/" + photo.uri(:thumb)}
 
 :javascript
-
-  $("img.lazy").lazyload({
-    placeholder: "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
-  });
 
   $.fancybox.defaults.hash = "photo";
   $.fancybox.defaults.thumbs = false;

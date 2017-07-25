@@ -30,9 +30,11 @@
     %script{:type => 'text/javascript', :src => "http://code.jquery.com/jquery-3.2.0.min.js"}
     %script{:type => 'text/javascript', :src => "/js?#{Time.now.strftime "%Y%m%d"}"}
 
-
   %body{:class => touch_device? && "touch_device" || ""}
     = yield
+
+    :javascript
+      window.lazyLoadOptions = {};
 
     - if settings.production?
       :javascript
@@ -45,3 +47,5 @@
           ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
           var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
         })();
+
+    %script{:async => '', :type => 'text/javascript', :src => "https://cdnjs.cloudflare.com/ajax/libs/vanilla-lazyload/8.0.1/lazyload.js"}

@@ -1,11 +1,6 @@
 #index
   - Lib::Index.albums.each do |album|
     %a.album{:href => gallery(album)}
-      %img.lazy{:"data-original" => samples(album)}
+      %img{:"data-original" => samples(album)}
       .title= album.config(:title)
       .desc= album.config(:desc)
-
-:javascript
-  $("img.lazy").lazyload({
-    threshold : 200
-  });
