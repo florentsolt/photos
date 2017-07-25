@@ -25,7 +25,9 @@
 
 :javascript
 
-  $("img.lazy").lazyload();
+  $("img.lazy").lazyload({
+    placeholder: "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
+  });
 
   $.fancybox.defaults.hash = "photo";
   $.fancybox.defaults.thumbs = false;
