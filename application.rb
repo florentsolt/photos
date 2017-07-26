@@ -11,7 +11,7 @@ require 'curb'
 
 require File.join(__dir__, 'lib')
 
-FONT_CACHE = {}
+CSS_CACHE = {}
 
 set :sass, {
   :cache_store => Sass::CacheStores::Memory.new,
@@ -124,7 +124,7 @@ get '/js' do
   $JS
 end
 
-get "/:name/:id/original.:ext" do
+get "/:name/:name-:id.:ext" do
   @album = Lib::Album.load params[:name]
   password?
   @photo = @album.photos[params[:id]]
@@ -160,10 +160,13 @@ end
 get '/:name/?' do
     @album = Lib::Album.load params[:name]
     password?
-    FONT_CACHE[@album.font_href] ||= Curl.get(@album.font_href).body_str
+    CSS_CACHE[@album.font_href] ||= Curl.get(@album.font_href).body_str
+    fancybox = "https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.1.20/jquery.fancybox.min.css"
+    CSS_CACHE[fancybox] ||= Curl.get(fancybox).body_str.force_encoding('utf-8')
     @css = sass(:style) + File.read(__dir__ / :public / :css / "jquery.fancybox.min.css")
-    @css += "\n#{FONT_CACHE[@album.font_href]}"
+    @css += "\n#{CSS_CACHE[@album.font_href]}"
     @css += "\n#title, #desc, #zip, .caption {font-family: '#{@album.font_family}', sans-serif !important;}"
+    @css += "\n#{CSS_CACHE[fancybox]}"
 
     if @album.reverse?
       @photos = @album.photos.values.reverse

@@ -14,26 +14,29 @@
         .section
           %img{:src => "/img/transparent.gif"}
           .caption=@album.config(:section)[photo.id]
-      %a.item{:style => "width:#{photo.size(:thumb).x*200/photo.size(:thumb).y}px; flex-grow:#{photo.size(:thumb).x*200/photo.size(:thumb).y}", :"data-fancybox" => "photo", :id => "photo-#{photo.id.to_i}", :href => "/" + photo.uri(:preview), :"data-width" => photo.size(:preview).x, :"data-height" => photo.size(:preview).y, :"data-download-url" => "/" + photo.uri(:original)}<>
+      %a.item{:style => "width:#{photo.size(:thumb).x*200/photo.size(:thumb).y}px; flex-grow:#{photo.size(:thumb).x*200/photo.size(:thumb).y}",
+          :"data-fancybox" => "photo", :id => "photo-#{photo.id.to_i}",
+          :href => "/" + photo.uri(:preview),
+          :"data-width" => photo.size(:preview).x, :"data-height" => photo.size(:preview).y,
+          :"data-download-url" => "/" + photo.uri(:original)}<>
         %div{:style => "padding-bottom:#{photo.size(:thumb).y.to_f/photo.size(:thumb).x*100}%"}
         %img{:"data-original" => "/" + photo.uri(:thumb)}
 
+%script{:type => 'text/javascript', :src => "http://code.jquery.com/jquery-3.2.0.min.js"}
+%script{:type => 'text/javascript', :src => "https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.1.20/jquery.fancybox.min.js"}
+
 :javascript
 
-  $.fancybox.defaults.hash = "photo";
-  $.fancybox.defaults.thumbs = false;
   $.fancybox.defaults.loop = false;
-  $.fancybox.defaults.opacity = false;
-  // $.fancybox.defaults.image.preload = false;
 
-  $.fancybox.defaults.onInit = function( instance ) {
-    instance.$refs.downloadButton = $('<a class="fancybox-button"><div class="download icon"></div></a>')
-      .appendTo( instance.$refs.buttons );
-  }
+  $.fancybox.defaults.btnTpl.download = '<a class="fancybox-download fancybox-button"><div class="download icon"></div></a>';
 
-  $.fancybox.defaults.beforeMove = function( instance, current ) {
-    if (current.opts.$orig) {
-      instance.$refs.downloadButton.attr('href', current.opts.$orig.attr('data-download-url'));
-      instance.$refs.downloadButton.attr('target', $('body').hasClass('touch_device') ? '_blank' : '_self');
-    }
+  $.fancybox.defaults.buttons = [
+    'download',
+    'fullScreen',
+    'close'
+  ];
+
+  $.fancybox.defaults.beforeShow = function( instance, current ) {
+    $('.fancybox-download').attr('href', current.opts.$orig.attr('data-download-url'));
   }
