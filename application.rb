@@ -163,7 +163,7 @@ get '/:name/?' do
     CSS_CACHE[@album.font_href] ||= Curl.get(@album.font_href).body_str
     fancybox = "https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.1.20/jquery.fancybox.min.css"
     CSS_CACHE[fancybox] ||= Curl.get(fancybox).body_str.force_encoding('utf-8')
-    @css = sass(:style) + File.read(__dir__ / :public / :css / "jquery.fancybox.min.css")
+    @css = sass(:style)
     @css += "\n#{CSS_CACHE[@album.font_href]}"
     @css += "\n#title, #desc, #zip, .caption {font-family: '#{@album.font_family}', sans-serif !important;}"
     @css += "\n#{CSS_CACHE[fancybox]}"
