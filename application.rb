@@ -11,7 +11,7 @@ require 'curb'
 
 require File.join(__dir__, 'lib')
 
-CSS_CACHE = {}
+ASSETS_CACHE = {}
 
 set :sass, {
   :cache_store => Sass::CacheStores::Memory.new,
@@ -109,19 +109,17 @@ end
 end
 
 get '/js' do
-  if not settings.production? or $JS.nil?
-    $JS = Dir[File.dirname(__FILE__) / :public / :js / '*.js'].sort do |a,b|
-        File.basename(a).to_i <=> File.basename(b).to_i
-    end.collect do |js|
-      "#{File.read(js)}\n"
-    end.join
-  end
-  if settings.production?
-    $JS_SHA1 ||= Digest::SHA1
-    etag $JS_SHA1.hexdigest($JS)
-  end
+  jquery = "http://code.jquery.com/jquery-3.2.0.min.js"
+  ASSETS_CACHE[jquery] ||= Curl.get(jquery).body_str
+
+  fancybox = "https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.1.20/jquery.fancybox.min.js"
+  ASSETS_CACHE[fancybox] ||= Curl.get(fancybox).body_str
+
+  ASSETS_CACHE["album"] ||= File.read(__dir__ / :public / 'album.js')
+
   content_type :js
-  $JS
+  etag Digest::SHA1.hexdigest(jquery + fancybox + ASSETS_CACHE["album"])
+  ASSETS_CACHE[jquery] + "\n" + ASSETS_CACHE[fancybox] + "\n" + ASSETS_CACHE["album"]
 end
 
 get "/:name/:name-:id.:ext" do
@@ -160,13 +158,13 @@ end
 get '/:name/?' do
     @album = Lib::Album.load params[:name]
     password?
-    CSS_CACHE[@album.font_href] ||= Curl.get(@album.font_href).body_str
+    ASSETS_CACHE[@album.font_href] ||= Curl.get(@album.font_href).body_str
     fancybox = "https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.1.20/jquery.fancybox.min.css"
-    CSS_CACHE[fancybox] ||= Curl.get(fancybox).body_str.force_encoding('utf-8')
+    ASSETS_CACHE[fancybox] ||= Curl.get(fancybox).body_str.force_encoding('utf-8')
     @css = sass(:style)
-    @css += "\n#{CSS_CACHE[@album.font_href]}"
+    @css += "\n#{ASSETS_CACHE[@album.font_href]}"
     @css += "\n#title, #desc, #zip, .caption {font-family: '#{@album.font_family}', sans-serif !important;}"
-    @css += "\n#{CSS_CACHE[fancybox]}"
+    @css += "\n#{ASSETS_CACHE[fancybox]}"
 
     if @album.reverse?
       @photos = @album.photos.values.reverse

@@ -22,21 +22,4 @@
         %div{:style => "padding-bottom:#{photo.size(:thumb).y.to_f/photo.size(:thumb).x*100}%"}
         %img{:"data-original" => "/" + photo.uri(:thumb)}
 
-%script{:type => 'text/javascript', :src => "http://code.jquery.com/jquery-3.2.0.min.js"}
-%script{:type => 'text/javascript', :src => "https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.1.20/jquery.fancybox.min.js"}
-
-:javascript
-
-  $.fancybox.defaults.loop = false;
-
-  $.fancybox.defaults.btnTpl.download = '<a class="fancybox-download fancybox-button"><div class="download icon"></div></a>';
-
-  $.fancybox.defaults.buttons = [
-    'download',
-    'fullScreen',
-    'close'
-  ];
-
-  $.fancybox.defaults.beforeShow = function( instance, current ) {
-    $('.fancybox-download').attr('href', current.opts.$orig.attr('data-download-url'));
-  }
+%script{:async => true, :type => 'text/javascript', :src => "/js"}
