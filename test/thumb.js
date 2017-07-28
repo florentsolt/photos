@@ -62,7 +62,7 @@ fs.readdirAsync(directory)
       // );
 
       promises.push(spawn('vipsthumbnail', [
-        '-s', '2560x1600',
+        '-s', 'x300',
         path.join(directory, filename),
         '-o', output + '[Q=85]'
       ]));
