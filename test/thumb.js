@@ -16,6 +16,7 @@ Promise.promisifyAll(fs);
 program
   .version('0.4.2')
   .option('-a, --album [name]', 'specify an album')
+  .option('-p, --path [directory]', 'specify the directory where albums are')
   .option('-c, --concurrency [limit]', 'specify a concurrency limit', parseInt, 3)
   .option('-d, --debug', 'output debug information')
   .parse(process.argv);
@@ -30,7 +31,7 @@ if (program.debug) {
   winston.level = 'debug';
 }
 
-var directory = path.join(__dirname, '..', 'albums', program.album);
+var directory = program.path ? program.path : path.join(__dirname, '..', 'albums', program.album);
 fs.readdirAsync(directory)
   .map(function(filename) {
     var promises = [],
