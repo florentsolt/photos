@@ -31,7 +31,10 @@ if (program.debug) {
   winston.level = 'debug';
 }
 
-var directory = program.path ? program.path : path.join(__dirname, '..', 'albums', program.album);
+var directory = program.path ?
+  path.join(program.path, program.album) :
+  path.join(__dirname, '..', 'albums', program.album);
+
 fs.readdirAsync(directory)
   .map(function(filename) {
     var promises = [],
