@@ -6,8 +6,10 @@ var Promise = require("bluebird"),
     colors = require('colors'),
     path = require('path'),
     fs = require('fs'),
-    winston = require('winston'),
-    sharp = require('sharp');
+    winston = require('winston');
+    // sharp = require('sharp');
+
+var spawn = require('./spawn');
 
 Promise.promisifyAll(fs);
 
@@ -37,18 +39,29 @@ fs.readdirAsync(directory)
     if (filename.toLowerCase().match(/\.jpg$/)) {
       winston.debug(filename);
       output = path.join(__dirname, 'cache', 'preview-' + filename);
-      promises.push(sharp(path.join(directory, filename))
-        .resize(2560, 1600)
-        .jpeg({quality: 85, progressive: true, optimiseScans: true})
-        .toFile(output)
-      );
+      // promises.push(sharp(path.join(directory, filename))
+      //   .resize(2560, 1600)
+      //   .jpeg({quality: 85, progressive: true})
+      //   .toFile(output)
+      // );
+      promises.push(spawn('vipsthumbnail', [
+        '-s', '2560x1600',
+        path.join(directory, filename),
+        '-o', output + '[Q=85]'
+      ]));
 
-      output = path.join(__dirname, 'cache', 'thumb-' + filename);
-      promises.push(sharp(path.join(directory, filename))
-        .resize(null, 300)
-        .jpeg({quality: 85, progressive: true})
-        .toFile(output)
-      );
+      // output = path.join(__dirname, 'cache', 'thumb-' + filename);
+      // promises.push(sharp(path.join(directory, filename))
+      //   .resize(null, 300)
+      //   .jpeg({quality: 85, progressive: true})
+      //   .toFile(output)
+      // );
+
+      promises.push(spawn('vipsthumbnail', [
+        '-s', '2560x1600',
+        path.join(directory, filename),
+        '-o', output + '[Q=85]'
+      ]));
     }
 
     return Promise.all(promises);
