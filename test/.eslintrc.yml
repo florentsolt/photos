@@ -1,0 +1,57 @@
+extends:
+    eslint:recommended
+
+env:
+  node: true
+  es6: true
+
+rules:
+  # Possible errors
+  no-unexpected-multiline: error
+  no-restricted-globals: [error, event, stop, length, focus, name, top, print, fdescribe, fit, Event]
+
+  # Best practices
+  block-scoped-var: error
+  curly: [error, "multi-line"]
+  dot-notation: [error, {"allowKeywords": true}]
+  eqeqeq: error
+  no-caller: error
+  no-eval: error
+  no-extra-bind: error
+  no-implied-eval: error
+  no-iterator: error
+  no-native-reassign: error
+  no-new-func: error
+  no-new-wrappers: error
+  no-octal-escape: error
+  no-proto: error
+  no-return-assign: error
+  no-self-compare: error
+  no-sequences: error
+  no-throw-literal: error
+  no-unused-expressions: error
+  no-useless-call: error
+  no-useless-concat: error
+  no-with: error
+  wrap-iife: error
+  no-constant-condition: off
+
+  # Strict mode
+  strict: [error, "global"]
+
+  # Variables
+  no-catch-shadow: error
+  no-shadow-restricted-names: error
+
+  # Stylistics issues
+  comma-dangle: off
+  keyword-spacing: [error, {before: true, after: true}]
+  linebreak-style: error
+  new-parens: error
+  no-lonely-if: error
+  no-trailing-spaces: error
+  no-unneeded-ternary : error
+  semi-spacing: error
+  semi: error
+  space-before-blocks: error
+  space-infix-ops: error

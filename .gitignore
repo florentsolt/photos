@@ -4,3 +4,5 @@ Gemfile.lock
 .bundle
 albums/*
 public/cache/*
+test/cache
+test/node_modules
