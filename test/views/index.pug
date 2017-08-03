@@ -1,0 +1,9 @@
+extends layout
+
+block content
+  #index
+    each album in albums
+      a.album(href="/" + album.name)
+        img(data-original="/" + album.name + "/samples.jpg")
+        .title= album.title
+        .description= album.description

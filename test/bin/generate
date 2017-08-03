@@ -1,0 +1,177 @@
+#!/usr/bin/env node
+'use strict';
+
+var Promise = require("bluebird"),
+    program = require('commander'),
+    colors = require('colors'),
+    path = require('path'),
+    fs = require('fs'),
+    winston = require('winston'),
+    util = require('util'),
+    Zip = require('adm-zip'),
+    rmrf = require('rmrf'),
+    execFile = util.promisify(require('child_process').execFile),
+    leftPad = require('left-pad'),
+    sizeOf = util.promisify(require('image-size'));
+
+Promise.promisifyAll(fs);
+
+program
+  .option('-a, --album [name]', 'specify an album')
+  .option('-d, --debug', 'output debug information')
+  .parse(process.argv);
+
+if (!program.album) {
+    program.help(txt => colors.red("You must specify an album name.") + "\n" + txt);
+}
+
+if (program.debug) {
+  winston.level = 'debug';
+}
+
+var folders = {
+  root: path.join(__dirname, '..', 'albums', program.album)
+};
+
+['originals', 'previews', 'thumbs'].forEach(folder => {
+  folders[folder] = path.join(folders.root, folder);
+  if (fs.existsSync(folders[folder])) rmrf(folders[folder]);
+  fs.mkdirSync(folders[folder]);
+});
+
+/*
+ * Structure of an album
+ * [{
+ *    id: 0,
+ *    idStr: "00000",
+ *    filename: "",
+ *    preview: {width: 0, height: 0},
+ *    thumb: {width: 0, height: 0},
+ *    ts: 0
+ *  }, ...]
+ */
+
+var album = [];
+
+/*
+ * Find all zip files and extract them into ./originals/
+ */
+var i = 1;
+fs.readdirAsync(folders.root).each(filename => {
+  if (filename.match(/\.zip$/)) {
+    winston.debug('found zip', filename);
+    var zip = new Zip(path.join(folders.root, filename));
+    zip.getEntries().forEach(entry => {
+      if (entry.entryName.toLowerCase().match(/\.jpg$/)) {
+        var idStr = leftPad(i, 5, 0);
+        var target = program.album.replace(/[ _\+\(\)]/g, '-').replace(/-+/, '-') + '-' + idStr + '.jpg';
+        album.push({filename: target, id: i, idStr: idStr});
+        winston.info('extract', entry.entryName, 'in', target);
+        zip.extractEntryTo(entry.entryName, folders.originals, false, false);
+        fs.renameSync(path.join(folders.originals, entry.entryName), path.join(folders.originals, target));
+        i++;
+      }
+    });
+  }
+})
+.then(() => album)
+.each((picture, index) => {
+  /*
+   * Resize all originals a save them into ./previews/
+   */
+  var output = path.join(folders.previews, picture.filename);
+  winston.info("generate preview for", picture.filename);
+
+  return execFile('vipsthumbnail', [
+    '-s', '2560x1600',
+    path.join(folders.originals, picture.filename),
+    '-o', output + '[Q=85]'
+  ])
+  .then(() => execFile('jpegtran', ['-optimize', '-copy', 'none', '-progressive', '-outfile', output, output]))
+  .then(() => sizeOf(output))
+  .then(dimensions => {
+    delete(dimensions.type);
+    album[index].preview = dimensions;
+  });
+})
+.then(() => album)
+.each((picture, index) => {
+  /*
+   * Resize all originals a save them into ./thumbs/
+   */
+  var output = path.join(folders.thumbs, picture.filename);
+  winston.info("generate thumb for", picture.filename);
+
+  return execFile('vipsthumbnail', [
+    '-s', 'x300',
+    path.join(folders.previews, picture.filename),
+    '-o', output + '[Q=85]'
+  ])
+  .then(() => execFile('jpegtran', ['-optimize', '-copy', 'none', '-progressive', '-outfile', output, output]))
+  .then(() => sizeOf(output))
+  .then(dimensions => {
+    delete(dimensions.type);
+    album[index].thumb = dimensions;
+  });
+}).then(() => {
+  /*
+   * Save album informations in a JSON file
+   */
+  winston.info('save album meta data');
+  return fs.writeFileAsync(path.join(folders.root, 'album.json'), JSON.stringify(album));
+}).then(() => {
+  /*
+   * Generate the album zip file
+   */
+  winston.info("generate the zip file");
+  return execFile('zip',
+    ['-u', '-X', '-D', '-0', path.join(folders.root, 'album.zip')].concat(album.map(picture => picture.filename)),
+    {cwd: folders.originals});
+})
+.then(() => fs.readdirAsync(folders.root))
+.each((filename) => {
+  /*
+   * Remove all zip files that are not the album
+   */
+  if (filename.match(/\.zip$/) && filename !== 'album.zip') {
+    winston.info("deleting", filename);
+    return fs.unlinkAsync(path.join(folders.root, filename));
+  }
+}).then(() => {
+  /*
+   * Select sample images
+   */
+  var count = 8;
+  var samples = [];
+  var filenames = album.map(picture => picture.filename);
+  if (count > album.length) {
+    for (let i = 0; i < count; i++) {
+      samples.push(filenames[i % filenames.length]);
+    }
+  } else {
+    for (let i = 0; i < count; i++) {
+      var index = Math.floor(Math.random() * filenames.length);
+      samples.push(filenames.splice(index, 1)[0]);
+    }
+  }
+  return samples;
+}).map((filename, index) => {
+  /*
+   * Generate the sample images
+   */
+  winston.info("generate sample image number", index);
+  var output = path.join(folders.root, 'sample-' + index + '.jpg');
+  return execFile('vipsthumbnail', ['-s', '200x200', '-m', 'attention', path.join(folders.previews, filename), '-o', output + '[Q=85]'])
+    .then(() => output);
+}).then((samples) => {
+  /*
+   * Generate the sample collage
+   */
+  winston.info("generate samples collage");
+  return execFile('montage', ['-background', '#D7D7D7FF', '-tile', '4x2', '-geometry', '200x200+0+0', '-borderwidth', '1', '-bordercolor', '#D7D7D7FF'].concat(samples).concat([path.join(folders.root, 'samples.jpg')]))
+    .then(() => samples);
+})
+.map(sample => fs.unlinkAsync(sample))
+.catch(e => {
+  winston.error(e);
+});
