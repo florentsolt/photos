@@ -1,46 +1,33 @@
 'use strict';
 
-var express = require('express'),
+var connect = require('connect'),
     path = require('path'),
-    app = express();
+    app = connect(),
+    middlewares = {
+      errors: require('./lib/errors'),
+      favicon: require('serve-favicon'),
+      static: require('serve-static'),
+      render: require('./lib/render'),
+      log: require('./lib/log'),
+      js: require('./lib/js'),
+      css: require('./lib/css'),
+      router: require('./lib/router')
+    };
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'pug');
+app.use(middlewares.favicon(
+  path.join(__dirname, 'views', 'favicon.ico')
+));
+app.use(middlewares.log);
+app.use(middlewares.render);
+app.use('/_', middlewares.static(
+  path.join(__dirname, 'albums')
+));
+app.use('/js', middlewares.js);
+app.use('/', middlewares.router.find);
+app.use('/', middlewares.css);
+app.use('/', middlewares.router.routes);
 
-
-// add req to all views
-app.use(function(req, res, next) {
-  res.locals.req = req;
-  next();
-});
-
-app.use(require('serve-favicon')(path.join(__dirname, 'public', 'favicon.ico')));
-app.use(require('morgan')('dev'));
-app.use('/js', require('browserify-middleware')([
-  {'./public/javascripts/album.js': {run: true}},
-  '@fancyapps/fancybox',
-  'jquery'
-]));
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/', require('./router'));
-
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
-});
-
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
-});
+app.use(middlewares.errors[404]);
+app.use(middlewares.errors[500]);
 
 module.exports = app;

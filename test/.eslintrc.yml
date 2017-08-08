@@ -30,6 +30,7 @@ rules:
   no-sequences: error
   no-throw-literal: error
   no-unused-expressions: error
+  no-unused-vars: [error, {"argsIgnorePattern": "next"}]
   no-useless-call: error
   no-useless-concat: error
   no-with: error

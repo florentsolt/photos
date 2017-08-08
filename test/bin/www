@@ -9,9 +9,8 @@ program
   .option('-p, --port <number>', 'specify the port number', parseInt)
   .parse(process.argv);
 
-app.set('port', program.port || 3000);
 var server = http.createServer(app);
-server.listen(app.get('port'));
+server.listen(program.port || 3000);
 
 server.on('listening', () => {
   var addr = server.address();
