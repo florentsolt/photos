@@ -6,7 +6,7 @@ var app = require('../app'),
     http = require('http');
 
 program
-  .option('-p, --port <number>', 'specify the port number', parseInt)
+  .option('-p, --port <number>', 'specify the port number')
   .parse(process.argv);
 
 var server = http.createServer(app);
