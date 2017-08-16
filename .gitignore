@@ -6,4 +6,5 @@ albums/*
 public/cache/*
 test/cache
 test/node_modules
-test/albums
+test/albums/*
+test/uploads/*
