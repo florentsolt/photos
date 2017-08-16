@@ -1,31 +1,15 @@
 'use strict';
 
-var Promise = require("bluebird"),
-    fs = require('fs'),
-    path = require('path'),
-    mustache = require('mustache'),
-    cache = {};
+var path = require('path'),
+    pug = require('pug');
 
-Promise.promisifyAll(fs);
-
-module.exports = (req, res, next) => {
+module.exports = function(req, res, next) {
   res.render = (viewName, locals) => {
+    var filename = path.join(__dirname, '..', 'views', viewName + '.pug');
+    var view = pug.compileFile(filename, {cache: true});
     locals = (typeof locals !== 'object' ? {} : locals);
     locals.req = req;
-    Promise
-      .all(['layout', viewName])
-      .map(filename => {
-        if (!cache[filename]) {
-          return fs.readFileAsync(path.join(__dirname, '..', 'views', filename + '.mustache'))
-            .then(buffer => (cache[filename] = buffer.toString()));
-        } else {
-          return cache[filename];
-        }
-      })
-      .then(templates => {
-        locals.content = mustache.render(templates[1].toString(), locals);
-        res.end(mustache.render(templates[0].toString(), locals));
-      });
+    res.end(view(locals));
   };
   next();
 };

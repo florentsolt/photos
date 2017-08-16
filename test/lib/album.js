@@ -10,22 +10,21 @@ Promise.promisifyAll(fs);
 
 function Album(name) {
   this.name = name;
-  this.title = "title of " + name;
-  this.description = "description of " + name;
-  this.font = "Yellowtail";
 }
 
 Album.prototype.load = function() {
   return fs.readFileAsync(path.join(root, this.name, 'album.json'))
     .then(text => {
-      this.pictures = JSON.parse(text);
+      var object = JSON.parse(text);
+      Object.keys(object).forEach(key => (this[key] = object[key]));
+      if (this.reverse) this.pictures = this.pictures.reverse();
       cache[this.name] = this;
       return this;
     });
 };
 
 Album.find = function(name, silent) {
-  if (cache[name]) {
+  if (process.env.NODE_ENV === 'production' && cache[name]) {
     return Promise.resolve(cache[name]);
   } else {
     return fs.statAsync(path.join(root, name))
@@ -45,7 +44,26 @@ Album.find = function(name, silent) {
 Album.all = function() {
   return fs.readdirAsync(root)
     .map(folder => Album.find(folder, true))
-    .filter(album => album);
+    .filter(album => album)
+    .map(album => album.load());
 };
 
+Album.route = (req, res, next) => {
+  var name = req.url.split('/')[1].replace('.', '');
+  Album.find(name)
+    .then(album => album.load())
+    .then(album => {
+      req.log.push("found album " + album.name);
+      req.album = album;
+      next();
+    }).catch(() => {
+      if (req.url !== '/') {
+        var err = new Error('Album not found');
+        err.status = 404;
+        next(err);
+      } else {
+        next();
+      }
+    });
+};
 module.exports = Album;

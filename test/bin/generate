@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 'use strict';
 
-var Promise = require("bluebird"),
+var config = require('../config'),
+    Promise = require("bluebird"),
     program = require('commander'),
     path = require('path'),
     fs = require('fs'),
     Log = require('console-log-level'),
     log,
     util = require('util'),
-    Zip = require('adm-zip'),
     rmrf = require('rmrf'),
     execFile = util.promisify(require('child_process').execFile),
     leftPad = require('left-pad'),
@@ -18,6 +18,10 @@ Promise.promisifyAll(fs);
 
 program
   .option('-d, --debug', 'output debug information')
+  .option('-t, --title [text]', 'specify a title', 'Title')
+  .option('-e, --description [text]', 'specify a description', 'Description')
+  .option('-f, --font [name]', 'specify font', 'Amatic SC')
+  .option('-r, --reverse', 'reverse order')
   .arguments('<album>')
   .action(album => (program.album = path.basename(album)))
   .parse(process.argv);
@@ -37,19 +41,44 @@ if (program.debug) {
   log = Log({ level: 'info' });
 }
 
+log.debug('title is', program.title);
+log.debug('description is', program.description);
+log.debug('font is', program.font);
+log.debug('reverse is', program.reverse);
+
 var folders = {
-  root: path.join(__dirname, '..', 'albums', program.album)
+  albums: path.join(__dirname, '..', 'albums'),
+  uploads: path.join(__dirname, '..', 'uploads')
 };
 
+folders.album = path.join(folders.albums, program.album);
+folders.upload = path.join(folders.uploads, program.album);
+
+if (!fs.existsSync(folders.upload)) {
+    program.help(txt => "The upload folder does not exists.\n" + txt);
+}
+
+if (!fs.existsSync(folders.albums)) fs.mkdirSync(folders.albums);
+if (!fs.existsSync(folders.album)) fs.mkdirSync(folders.album);
+
 ['originals', 'previews', 'thumbs'].forEach(folder => {
-  folders[folder] = path.join(folders.root, folder);
+  folders[folder] = path.join(folders.album, folder);
   if (fs.existsSync(folders[folder])) rmrf(folders[folder]);
   fs.mkdirSync(folders[folder]);
 });
 
 /*
  * Structure of an album
- * [{
+ * {
+ *    title: '',
+ *    description: '',
+ *    font: '',
+ *    reverse: false,
+ *    pictures: []
+ * }
+ *
+ * Structure of a picture
+ * {
  *    id: 0,
  *    idStr: "00000",
  *    filename: "",
@@ -57,33 +86,36 @@ var folders = {
  *    thumb: {width: 0, height: 0},
  *    flex: {width: 0, padding: 0}
  *    ts: 0
- *  }, ...]
+ *  }
  */
 
-var album = [];
+var album = {
+  title: program.title,
+  description: program.description,
+  font: program.font,
+  reverse: program.reverse || false,
+  pictures: []
+};
 
 /*
- * Find all zip files and extract them into ./originals/
+ * Find all picture files and link them into ./originals/
  */
 var i = 1;
-fs.readdirAsync(folders.root).each(filename => {
-  if (filename.match(/\.zip$/)) {
-    log.debug('found zip', filename);
-    var zip = new Zip(path.join(folders.root, filename));
-    zip.getEntries().forEach(entry => {
-      if (entry.entryName.toLowerCase().match(/\.jpg$/)) {
-        var idStr = leftPad(i, 5, 0);
-        var target = program.album.replace(/[ _\+\(\)]/g, '-').replace(/-+/, '-') + '-' + idStr + '.jpg';
-        album.push({filename: target, id: i, idStr: idStr});
-        log.info('extract', entry.entryName, 'in', target);
-        zip.extractEntryTo(entry.entryName, folders.originals, false, false);
-        fs.renameSync(path.join(folders.originals, entry.entryName), path.join(folders.originals, target));
-        i++;
-      }
-    });
+fs.readdirAsync(folders.upload).each(filename => {
+  if (path.extname(filename) === '.jpg') {
+    log.debug('found', filename);
+    var idStr = leftPad(i, 5, 0);
+    var target = program.album.replace(/[ _\+\(\)]/g, '-').replace(/-+/, '-') + '-' + idStr + '.jpg';
+    album.pictures.push({filename: target, id: i, idStr: idStr});
+    log.info('symlink', filename, 'to', target);
+    fs.symlinkSync(path.join(folders.upload, target), path.join(folders.originals, filename));
+    i++;
+  } else {
+    log.debug('skip', filename);
+    return false;
   }
 })
-.then(() => album)
+.then(() => album.pictures)
 .each((picture, index) => {
   /*
    * Resize all originals a save them into ./previews/
@@ -92,18 +124,18 @@ fs.readdirAsync(folders.root).each(filename => {
   log.info("generate preview for", picture.filename);
 
   return execFile('vipsthumbnail', [
-    '-s', '2560x1600',
+    '-s', config.preview,
     path.join(folders.originals, picture.filename),
-    '-o', output + '[Q=85]'
+    '-o', output + '[Q=' + config.quality + ']'
   ])
   .then(() => execFile('jpegtran', ['-optimize', '-copy', 'none', '-progressive', '-outfile', output, output]))
   .then(() => sizeOf(output))
   .then(dimensions => {
     delete(dimensions.type);
-    album[index].preview = dimensions;
+    album.pictures[index].preview = dimensions;
   });
 })
-.then(() => album)
+.then(() => album.pictures)
 .each((picture, index) => {
   /*
    * Resize all originals a save them into ./thumbs/
@@ -112,16 +144,16 @@ fs.readdirAsync(folders.root).each(filename => {
   log.info("generate thumb for", picture.filename);
 
   return execFile('vipsthumbnail', [
-    '-s', 'x300',
+    '-s', config.thumb,
     path.join(folders.previews, picture.filename),
-    '-o', output + '[Q=85]'
+    '-o', output + '[Q=' + config.quality + ']'
   ])
   .then(() => execFile('jpegtran', ['-optimize', '-copy', 'none', '-progressive', '-outfile', output, output]))
   .then(() => sizeOf(output))
   .then(dimensions => {
     delete(dimensions.type);
-    album[index].thumb = dimensions;
-    album[index].flex = {
+    album.pictures[index].thumb = dimensions;
+    album.pictures[index].flex = {
       width: Math.floor(dimensions.width * 200 / dimensions.height),
       padding: dimensions.height / dimensions.width * 100
     };
@@ -131,24 +163,28 @@ fs.readdirAsync(folders.root).each(filename => {
    * Save album informations in a JSON file
    */
   log.info('save album meta data');
-  return fs.writeFileAsync(path.join(folders.root, 'album.json'), JSON.stringify(album));
+  return fs.writeFileAsync(path.join(folders.album, 'album.json'), JSON.stringify(album, null, 4));
 }).then(() => {
   /*
    * Generate the album zip file
    */
   log.info("generate the zip file");
   return execFile('zip',
-    ['-u', '-X', '-D', '-0', path.join(folders.root, 'album.zip')].concat(album.map(picture => picture.filename)),
+    ['-u', '-X', '-D', '-0', path.join(folders.album, 'album.zip')].concat(album.pictures.map(picture => picture.filename)),
     {cwd: folders.originals});
 })
-.then(() => fs.readdirAsync(folders.root))
+.catch(e => {
+  // error code 12 stands for "zip has nothing to do" cf. man
+  if (typeof e.cmd !== 'string' || !e.cmd.startsWith('zip') || e.code !== 12) throw e;
+})
+.then(() => fs.readdirAsync(folders.album))
 .each((filename) => {
   /*
    * Remove all zip files that are not the album
    */
   if (filename.match(/\.zip$/) && filename !== 'album.zip') {
     log.info("deleting", filename);
-    return fs.unlinkAsync(path.join(folders.root, filename));
+    return fs.unlinkAsync(path.join(folders.album, filename));
   }
 }).then(() => {
   /*
@@ -156,8 +192,8 @@ fs.readdirAsync(folders.root).each(filename => {
    */
   var count = 8;
   var samples = [];
-  var filenames = album.map(picture => picture.filename);
-  if (count > album.length) {
+  var filenames = album.pictures.map(picture => picture.filename);
+  if (count > album.pictures.length) {
     for (let i = 0; i < count; i++) {
       samples.push(filenames[i % filenames.length]);
     }
@@ -173,15 +209,15 @@ fs.readdirAsync(folders.root).each(filename => {
    * Generate the sample images
    */
   log.info("generate sample image number", index);
-  var output = path.join(folders.root, 'sample-' + index + '.jpg');
-  return execFile('vipsthumbnail', ['-s', '200x200', '-m', 'attention', path.join(folders.previews, filename), '-o', output + '[Q=85]'])
+  var output = path.join(folders.album, 'sample-' + index + '.jpg');
+  return execFile('vipsthumbnail', ['-s', '200x200', '-m', 'attention', path.join(folders.previews, filename), '-o', output + '[Q=' + config.quality + ']'])
     .then(() => output);
 }).then((samples) => {
   /*
    * Generate the sample collage
    */
   log.info("generate samples collage");
-  return execFile('montage', ['-background', '#D7D7D7FF', '-tile', '4x2', '-geometry', '200x200+0+0', '-borderwidth', '1', '-bordercolor', '#D7D7D7FF'].concat(samples).concat([path.join(folders.root, 'samples.jpg')]))
+  return execFile('montage', ['-background', '#D7D7D7FF', '-tile', '4x2', '-geometry', '200x200+0+0', '-borderwidth', '1', '-bordercolor', '#D7D7D7FF'].concat(samples).concat([path.join(folders.album, 'samples.jpg')]))
     .then(() => samples);
 })
 .map(sample => fs.unlinkAsync(sample))

@@ -8,7 +8,9 @@ var Promise = require("bluebird"),
     isFresh = require('./fresh'),
     filenames = [
       path.join(__dirname, '..', 'node_modules', 'jquery', 'dist', 'jquery.js'),
+      path.join(__dirname, '..', 'node_modules', 'vanilla-lazyload', 'dist', 'lazyload.js'),
       path.join(__dirname, '..', 'node_modules', '@fancyapps', 'fancybox', 'dist', 'jquery.fancybox.js'),
+      path.join(__dirname, '..', 'node_modules', 'js-sha1', 'build', 'sha1.min.js'),
       path.join(__dirname, '..', 'views', 'album.js')
     ],
     cache,

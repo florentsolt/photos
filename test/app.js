@@ -9,22 +9,27 @@ var connect = require('connect'),
       static: require('serve-static'),
       render: require('./lib/render'),
       log: require('./lib/log'),
-      js: require('./lib/js'),
+      js: require('browserify-middleware'),
       css: require('./lib/css'),
       router: require('./lib/router')
     };
 
-app.use(middlewares.favicon(
-  path.join(__dirname, 'views', 'favicon.ico')
-));
 app.use(middlewares.log);
 app.use(middlewares.render);
+
+app.use(middlewares.favicon(
+  path.join(__dirname, 'public', 'favicon.ico')
+));
 app.use('/_', middlewares.static(
   path.join(__dirname, 'albums')
 ));
-app.use('/js', middlewares.js);
-app.use('/', middlewares.router.find);
+app.use('/js', middlewares.js([
+  {'./public/javascripts/album.js': {run: true}},
+  '@fancyapps/fancybox',
+  'jquery'
+]));
 app.use('/', middlewares.css);
+app.use('/', middlewares.router.find);
 app.use('/', middlewares.router.routes);
 
 app.use(middlewares.errors[404]);
