@@ -74,7 +74,7 @@ helpers do
 
   # Need full url for layout.haml (also used in index.haml)
   def samples(album)
-    "#{request.scheme}://#{domain}/#{album.name}/samples"
+    "#{request.scheme}://#{domain}/cache/#{album.name}-samples.jpg"
   end
 end
 

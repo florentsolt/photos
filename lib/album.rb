@@ -7,6 +7,7 @@ module Lib
     @@timestamps = {}
 
     DUMP_FILE = "album.msh"
+    CACHE = File.join(__dir__, '..', 'public', 'cache')
 
     def self.load(name)
       filename = Config.default(:path) / name / DUMP_FILE
@@ -101,7 +102,7 @@ module Lib
     end
 
     def samples
-      config(:path) / @name / 'samples.jpg'
+      :cache / "#{@name}-samples.jpg"
     end
 
     def sets
@@ -203,20 +204,20 @@ module Lib
 
         samples.each do |s|
           filename = self.samples.sub('.jpg', "#{i}.jpg");
-          image = ImageSorcery.gm(s.filename(:thumb))
-          image.convert(filename, quality: self.config(:quality), thumbnail: "#{size}^", gravity: "center", extent: "#{size}x#{size}")
+          image = ImageSorcery.gm(CACHE / s.filename(:thumb))
+          image.convert(CACHE / filename, quality: self.config(:quality), thumbnail: "#{size}^", gravity: "center", extent: "#{size}x#{size}")
           samples[i - 1] = filename
           i += 1
         end
 
-        image = ImageSorcery.gm(self.samples)
+        image = ImageSorcery.gm(CACHE / self.samples)
         image.montage(samples,
                       background: '#D7D7D7FF', tile: '4x2', geometry: "#{size}x#{size}+0+0",
                       borderwidth: 1, bordercolor: '#000000FF')
-        Optimize.file(self.samples)
+        Optimize.file(CACHE / self.samples)
 
         samples.each do |sample|
-          File.unlink sample
+          File.unlink CACHE / sample
         end
       end
     end
