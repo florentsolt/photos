@@ -1,10 +1,4 @@
-config.yml
-Gemfile.lock
 .DS_Store
-.bundle
-albums/*
-public/cache/*
-test/cache
-test/node_modules
-test/albums/*
-test/uploads/*
+node_modules
+albums
+uploads

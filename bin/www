@@ -1,0 +1,40 @@
+#!/usr/bin/env node
+'use strict';
+
+var app = require('../app'),
+    path = require('path'),
+    program = require('commander'),
+    net = require('net'),
+    fs = require('fs'),
+    http = require('http');
+
+process.chdir(path.join(__dirname, '..'));
+
+program
+  .option('-p, --port <number>', 'specify the port number')
+  .parse(process.argv);
+
+var server = http.createServer(app);
+server.listen(program.port || 3000);
+
+server.on('listening', () => {
+  var addr = server.address();
+  var bind = (typeof addr === 'string' ? 'pipe ' + addr : 'port ' + addr.port);
+  console.log('Listening on ' + bind);
+});
+
+if (isNaN(parseInt(program.port))) {
+  server.on('error', function(e) {
+    if (e.code !== 'EADDRINUSE') throw e;
+    net.connect({path: program.port}, function() {
+      // really in use: re-throw
+      throw e;
+    }).on('error', function(e) {
+      if (e.code !== 'ECONNREFUSED') throw e;
+      // not in use: delete it and re-listen
+      fs.unlinkSync(program.port);
+      server.listen(program.port);
+    });
+  });
+}
+

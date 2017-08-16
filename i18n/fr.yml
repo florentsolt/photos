@@ -1,8 +1,0 @@
-back: Retour à la galerie
-download:
-  all: Télécharger toutes les photos
-  this: Télécharger cette photo
-time:
-  two: "%1<br>et %2"
-  interval: "entre le %1<br>et le %2"
-
