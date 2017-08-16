@@ -13,7 +13,7 @@ module.exports = (req, res, next) => {
       album: req.album
     });
   } else {
-    var cookies = cookie.parse(req.headers.cookie);
+    var cookies = cookie.parse(req.headers.cookie || "");
     if (config.password === false || cookies.pwd && cookies.pwd === sha1(salt + config.password)) {
       Album.all()
         .then(albums => res.render('index', {
