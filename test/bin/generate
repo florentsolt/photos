@@ -108,7 +108,7 @@ fs.readdirAsync(folders.upload).each(filename => {
     var target = program.album.replace(/[ _\+\(\)]/g, '-').replace(/-+/, '-') + '-' + idStr + '.jpg';
     album.pictures.push({filename: target, id: i, idStr: idStr});
     log.info('symlink', filename, 'to', target);
-    fs.symlinkSync(path.join(folders.originals, target), path.join(folders.uploads, filename));
+    fs.symlinkSync(path.join(folders.upload, filename), path.join(folders.originals, target));
     i++;
   } else {
     log.debug('skip', filename);
