@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 'use strict';
 
+if (process.title) {
+    process.title += " [photos]";
+}
+
 var app = require('../app'),
     path = require('path'),
     program = require('commander'),
