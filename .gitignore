@@ -2,3 +2,8 @@
 node_modules
 albums
 uploads
+start
+stop
+nodejs.pid
+nodejs.log
+nginx.conf
