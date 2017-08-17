@@ -11,7 +11,18 @@
   </div>
 
   <div id="container">
-    {{#album.pictures}}
+    {{#preload}}
+      <a class="picture" data-fancybox="picture" style="width:{{flex.width}}px;flex-grow:{{flex.width}}"
+        id="picture-{{idStr}}" href="/_/{{album.name}}/previews/{{filename}}"
+        data-width="{{preview.width}}" data-height="{{preview.height}}"
+        data-download-url="/_/{{album.name}}/originals/{{filename}}">
+
+        <div style="padding-bottom:{{flex.padding}}%"></div>
+        <img src="/_/{{album.name}}/thumbs/{{filename}}">
+      </a>
+    {{/preload}}
+
+    {{#lazy}}
       <a class="picture" data-fancybox="picture" style="width:{{flex.width}}px;flex-grow:{{flex.width}}"
         id="picture-{{idStr}}" href="/_/{{album.name}}/previews/{{filename}}"
         data-width="{{preview.width}}" data-height="{{preview.height}}"
@@ -20,7 +31,7 @@
         <div style="padding-bottom:{{flex.padding}}%"></div>
         <img data-original="/_/{{album.name}}/thumbs/{{filename}}">
       </a>
-    {{/album.pictures}}
+    {{/lazy}}
 
   </div>
 </div>
