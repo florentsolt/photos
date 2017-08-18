@@ -30,6 +30,8 @@ if (!program.album) {
     program.help(txt => "You must specify an album name.\n" + txt);
 }
 
+// FIXME: check for all programs in the path
+
 if (program.debug) {
   log = Log({
     level: 'debug',
