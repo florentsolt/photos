@@ -10,7 +10,7 @@ var config = require('../config'),
     log,
     util = require('util'),
     rmrf = require('rmrf'),
-    exif = require('fast-exif'),    
+    exif = require('fast-exif'),
     execFile = util.promisify(require('child_process').execFile),
     leftPad = require('left-pad'),
     sizeOf = util.promisify(require('image-size'));
@@ -119,7 +119,7 @@ fs.readdirAsync(folders.upload).each(filename => {
   }
 })
 .then(() => album.pictures)
-.each((picture, index) => {
+.each((picture) => {
   return exif.read(path.join(folders.originals, picture.filename)).then(data => {
     var date = data.exif.DateTimeOriginal || data.exif.DateTimeDigitized || data.image.ModifyDate;
     date = date.toISOString().slice(0, 10);
