@@ -10,6 +10,7 @@ var config = require('../config'),
     log,
     util = require('util'),
     rmrf = require('rmrf'),
+    exif = require('fast-exif'),    
     execFile = util.promisify(require('child_process').execFile),
     leftPad = require('left-pad'),
     sizeOf = util.promisify(require('image-size'));
@@ -18,8 +19,8 @@ Promise.promisifyAll(fs);
 
 program
   .option('-d, --debug', 'output debug information')
-  .option('-t, --title [text]', 'specify a title', 'Title')
-  .option('-e, --description [text]', 'specify a description', 'Description')
+  .option('-t, --title [text]', 'specify a title')
+  .option('-e, --description [text]', 'specify a description')
   .option('-f, --font [name]', 'specify font', 'Amatic SC')
   .option('-r, --reverse', 'reverse order')
   .arguments('<album>')
@@ -92,8 +93,8 @@ if (!fs.existsSync(folders.album)) fs.mkdirSync(folders.album);
  */
 
 var album = {
-  title: program.title,
-  description: program.description,
+  title: program.title || program.album.replace(/-/g, ' '),
+  description: program.description || album.date,
   font: program.font,
   reverse: program.reverse || false,
   pictures: []
@@ -116,6 +117,16 @@ fs.readdirAsync(folders.upload).each(filename => {
     log.debug('skip', filename);
     return false;
   }
+})
+.then(() => album.pictures)
+.each((picture, index) => {
+  return exif.read(path.join(folders.originals, picture.filename)).then(data => {
+    var date = data.exif.DateTimeOriginal || data.exif.DateTimeDigitized || data.image.ModifyDate;
+    date = date.toISOString().slice(0, 10);
+    if (!album.date || album.date < date) {
+      album.date = date;
+    }
+  });
 })
 .then(() => album.pictures)
 .each((picture, index) => {
