@@ -21,7 +21,7 @@ program
   .option('-d, --debug', 'output debug information')
   .option('-t, --title [text]', 'specify a title')
   .option('-e, --description [text]', 'specify a description')
-  .option('-f, --font [name]', 'specify font', 'Amatic SC')
+  .option('-f, --font [name]', 'specify google font name (https://fonts.google.com)')
   .option('-r, --reverse', 'reverse order')
   .arguments('<album>')
   .action(album => (program.album = path.basename(album)))
@@ -77,6 +77,10 @@ if (!fs.existsSync(folders.album)) fs.mkdirSync(folders.album);
  *    description: '',
  *    font: '',
  *    reverse: false,
+ *    dates: {
+ *      from: null,
+ *      to: null
+ *    },
  *    pictures: []
  * }
  *
@@ -93,12 +97,14 @@ if (!fs.existsSync(folders.album)) fs.mkdirSync(folders.album);
  */
 
 var album = {
-  title: program.title || program.album.replace(/-/g, ' '),
-  description: program.description || album.date,
-  font: program.font,
   reverse: program.reverse || false,
+  dates: {},
   pictures: []
 };
+
+if (program.title) album.title = program.title;
+if (program.description) album.description = program.description;
+if (program.font) album.font = program.font;
 
 /*
  * Find all picture files and link them into ./originals/
@@ -123,8 +129,11 @@ fs.readdirAsync(folders.upload).each(filename => {
   return exif.read(path.join(folders.originals, picture.filename)).then(data => {
     var date = data.exif.DateTimeOriginal || data.exif.DateTimeDigitized || data.image.ModifyDate;
     date = date.toISOString().slice(0, 10);
-    if (!album.date || album.date < date) {
-      album.date = date;
+    if (!album.dates.from || album.dates.from > date) {
+      album.dates.from = date;
+    }
+    if (!album.dates.to || album.dates.to < date) {
+      album.dates.to = date;
     }
   });
 })

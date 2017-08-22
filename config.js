@@ -1,6 +1,7 @@
 'use strict';
 
 var config = {
+  font: 'Amatic SC',
   password: false,
   preview: '2560x1600',
   thumb: 'x300',
