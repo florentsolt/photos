@@ -127,8 +127,11 @@ fs.readdirAsync(folders.upload).each(filename => {
 .then(() => album.pictures)
 .each((picture) => {
   return exif.read(path.join(folders.originals, picture.filename)).then(data => {
-    var date = data.exif.DateTimeOriginal || data.exif.DateTimeDigitized || data.image.ModifyDate;
-    date = date.toISOString().slice(0, 10);
+    var date;
+    if (data && data.exif) {
+      date = data.exif.DateTimeOriginal || data.exif.DateTimeDigitized || data.image.ModifyDate;
+      date = date.toISOString().slice(0, 10);
+    }
     if (!album.dates.from || album.dates.from > date) {
       album.dates.from = date;
     }
