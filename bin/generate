@@ -123,11 +123,14 @@ if (program.font) album.font = program.font;
  * Find all picture files and link them into ./originals/
  */
 var i = 1;
-fs.readdirAsync(folders.upload).map(filename => {
+log.debug('reading upload directory', folders.upload);
+fs.readdirAsync(folders.upload)
+.map(filename => {
+  log.debug('calculting checksum', filename);
   return hasha.fromFile(path.join(folders.upload, filename), {algorithm: 'md5'})
     .then(hash => [filename, hash])
     .catch(() => [filename, false]);
-})
+}, {concurrency: 1})
 // FIXME remove extra items from .pictures regarding nb of items in this array ^^
 // Also remove unused files (previews & thumbs & originals)
 .each(filenameAndHash => {
