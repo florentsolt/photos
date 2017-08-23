@@ -120,44 +120,51 @@ if (program.desc) album.description = program.desc;
 if (program.font) album.font = program.font;
 
 /*
- * Find all picture files and link them into ./originals/
+ * Read directory in ./uploads
  */
-var i = 1;
+var i = 0;
 log.debug('reading upload directory', folders.upload);
-fs.readdirAsync(folders.upload)
+/*
+ * Keep only *.jpg
+ */
+fs.readdirAsync(folders.upload).filter(filename => path.extname(filename) === '.jpg')
+
 .map(filename => {
+  /*
+   * Calculate MD5 checksums
+   */
   log.debug('calculting checksum', filename);
   return hasha.fromFile(path.join(folders.upload, filename), {algorithm: 'md5'})
     .then(hash => [filename, hash])
     .catch(() => [filename, false]);
+
 }, {concurrency: 1})
-// FIXME remove extra items from .pictures regarding nb of items in this array ^^
-// Also remove unused files (previews & thumbs & originals)
-.each(filenameAndHash => {
+
+.map(filenameAndHash => {
+  /*
+   * Create symlinks in ./originals
+   */
   var filename = filenameAndHash[0];
   var hash = filenameAndHash[1];
 
-  if (path.extname(filename) === '.jpg') {
-    log.debug('found', filename, hash);
-    if (album.pictures[i - 1] && hash !== false && album.pictures[i - 1].hash === hash) {
-      log.debug('skip (same hash)', filename, hash);
-      album.pictures[i - 1].skip = true;
-    } else {
-      var idStr = leftPad(i, 5, 0);
-      var target = program.album.replace(/[ _\+\(\)]/g, '-').replace(/-+/, '-') + '-' + idStr + '.jpg';
-      album.pictures[i - 1] = {filename: target, id: i, idStr: idStr, hash: hash};
-      log.info('symlink', filename, 'to', target);
-      if (fs.existsSync(path.join(folders.originals, target))) fs.unlinkSync(path.join(folders.originals, target));
-      fs.symlinkSync(path.join(folders.upload, filename), path.join(folders.originals, target));
-    }
-    i++;
-  } else {
-    log.debug('skip (not a jpg)', filename);
+  i++;
+  log.debug('found', filename, hash);
+  if (album.pictures[i - 1] && hash !== false && album.pictures[i - 1].hash === hash) {
+    log.debug('skip (same hash)', filename, hash);
     return false;
+  } else {
+    var idStr = leftPad(i, 5, 0);
+    var target = program.album.replace(/[ _\+\(\)]/g, '-').replace(/-+/, '-') + '-' + idStr + '.jpg';
+    album.pictures[i - 1] = {filename: target, id: i, idStr: idStr, hash: hash};
+    log.info('symlink', filename, 'to', target);
+    if (fs.existsSync(path.join(folders.originals, target))) fs.unlinkSync(path.join(folders.originals, target));
+    fs.symlinkSync(path.join(folders.upload, filename), path.join(folders.originals, target));
+    return album.pictures[i - 1];
   }
-})
-.then(() => album.pictures.filter(picture => picture.skip !== true))
-.each((picture) => {
+}, {concurrency: 1})
+.filter(picture => picture)
+
+.map((picture) => {
   /*
    * Extract dates from EXIF metadata
    */
@@ -173,10 +180,11 @@ fs.readdirAsync(folders.upload)
     if (!album.dates.to || album.dates.to < date) {
       album.dates.to = date;
     }
+    return picture;
   });
-})
-.then(() => album.pictures.filter(picture => picture.skip !== true))
-.each(picture => {
+}, {concurrency: 1})
+
+.map(picture => {
   /*
    * Resize all originals a save them into ./previews/
    */
@@ -193,10 +201,11 @@ fs.readdirAsync(folders.upload)
   .then(dimensions => {
     delete(dimensions.type);
     picture.preview = dimensions;
+    return picture;
   });
-})
-.then(() => album.pictures.filter(picture => picture.skip !== true))
-.each(picture => {
+}, {concurrency: 1})
+
+.map(picture => {
   /*
    * Resize all originals a save them into ./thumbs/
    */
@@ -217,14 +226,19 @@ fs.readdirAsync(folders.upload)
       width: Math.floor(dimensions.width * 200 / dimensions.height),
       padding: dimensions.height / dimensions.width * 100
     };
+    return picture;
   });
-}).then(() => {
+}, {concurrency: 1})
+
+.then(() => {
   /*
    * Save album informations in a JSON file
    */
   log.info('save album meta data');
   return fs.writeFileAsync(path.join(folders.album, 'album.json'), JSON.stringify(album, null, 4));
-}).then(() => {
+})
+
+.then(() => {
   /*
    * Generate the album zip file
    */
@@ -237,6 +251,7 @@ fs.readdirAsync(folders.upload)
   // error code 12 stands for "zip has nothing to do" cf. man
   if (typeof e.cmd !== 'string' || !e.cmd.startsWith('zip') || e.code !== 12) throw e;
 })
+
 .then(() => fs.readdirAsync(folders.album))
 .each((filename) => {
   /*
@@ -246,7 +261,9 @@ fs.readdirAsync(folders.upload)
     log.info("deleting", filename);
     return fs.unlinkAsync(path.join(folders.album, filename));
   }
-}).then(() => {
+})
+
+.then(() => {
   /*
    * Select sample images
    */
@@ -264,7 +281,9 @@ fs.readdirAsync(folders.upload)
     }
   }
   return samples;
-}).map((filename, index) => {
+})
+
+.map((filename, index) => {
   /*
    * Generate the sample images
    */
@@ -272,7 +291,9 @@ fs.readdirAsync(folders.upload)
   var output = path.join(folders.album, 'sample-' + index + '.jpg');
   return execFile('vipsthumbnail', ['-s', '200x200', '-m', 'attention', path.join(folders.previews, filename), '-o', output + '[Q=' + config.quality + ']'])
     .then(() => output);
-}).then((samples) => {
+})
+
+.then((samples) => {
   /*
    * Generate the sample collage
    */
@@ -280,7 +301,9 @@ fs.readdirAsync(folders.upload)
   return execFile('montage', ['-background', '#D7D7D7FF', '-tile', '4x2', '-geometry', '200x200+0+0', '-borderwidth', '1', '-bordercolor', '#D7D7D7FF'].concat(samples).concat([path.join(folders.album, 'samples.jpg')]))
     .then(() => samples);
 })
+
 .map(sample => fs.unlinkAsync(sample))
+
 .catch(e => {
   log.error(e);
 });
