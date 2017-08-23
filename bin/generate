@@ -8,6 +8,8 @@ var config = require('../config'),
     fs = require('fs'),
     fsx = require('fs.extra'),
     Log = require('console-log-level'),
+    hasha = require('hasha'),
+    which = require('which'),
     log,
     util = require('util'),
     exif = require('fast-exif'),
@@ -15,12 +17,18 @@ var config = require('../config'),
     leftPad = require('left-pad'),
     sizeOf = util.promisify(require('image-size'));
 
+['vipsthumbnail', 'jpegtran', 'zip', 'montage'].forEach(binary => {
+  if (!which.sync(binary, {nothrow: true})) {
+    program.help(() => "The mandorty binary \"" + binary + "\" is not present or not in the $PATH.\n");
+  }
+});
+
 Promise.promisifyAll(fs);
 
 program
   .option('-d, --debug', 'output debug information')
   .option('-t, --title [text]', 'specify a title')
-  .option('-e, --description [text]', 'specify a description')
+  .option('-e, --desc [text]', 'specify a description')
   .option('-f, --font [name]', 'specify google font name (https://fonts.google.com)')
   .option('-r, --reverse', 'reverse order')
   .arguments('<album>')
@@ -30,8 +38,6 @@ program
 if (!program.album) {
     program.help(txt => "You must specify an album name.\n" + txt);
 }
-
-// FIXME: check for all programs in the path
 
 if (program.debug) {
   log = Log({
@@ -45,7 +51,7 @@ if (program.debug) {
 }
 
 log.debug('title is', program.title);
-log.debug('description is', program.description);
+log.debug('description is', program.desc);
 log.debug('font is', program.font);
 log.debug('reverse is', program.reverse);
 
@@ -66,8 +72,7 @@ if (!fs.existsSync(folders.album)) fs.mkdirSync(folders.album);
 
 ['originals', 'previews', 'thumbs'].forEach(folder => {
   folders[folder] = path.join(folders.album, folder);
-  if (fs.existsSync(folders[folder])) fsx.rmrfSync(folders[folder]);
-  fsx.mkdirpSync(folders[folder]);
+  if (!fs.existsSync(folders[folder])) fsx.mkdirpSync(folders[folder]);
 });
 
 /*
@@ -88,6 +93,7 @@ if (!fs.existsSync(folders.album)) fs.mkdirSync(folders.album);
  * {
  *    id: 0,
  *    idStr: "00000",
+ *    hash: "",
  *    filename: "",
  *    preview: {width: 0, height: 0},
  *    thumb: {width: 0, height: 0},
@@ -96,36 +102,62 @@ if (!fs.existsSync(folders.album)) fs.mkdirSync(folders.album);
  *  }
  */
 
-var album = {
-  reverse: program.reverse || false,
-  dates: {},
-  pictures: []
-};
+var album;
 
+if (fs.existsSync(path.join(folders.album, 'album.json'))) {
+  album = JSON.parse(fs.readFileSync(path.join(folders.album, 'album.json')));
+} else {
+  album = {
+    reverse: false,
+    dates: {},
+    pictures: []
+  };
+}
+
+if (program.reverse) album.reverse = true;
 if (program.title) album.title = program.title;
-if (program.description) album.description = program.description;
+if (program.desc) album.description = program.desc;
 if (program.font) album.font = program.font;
 
 /*
  * Find all picture files and link them into ./originals/
  */
 var i = 1;
-fs.readdirAsync(folders.upload).each(filename => {
+fs.readdirAsync(folders.upload).map(filename => {
+  return hasha.fromFile(path.join(folders.upload, filename), {algorithm: 'md5'})
+    .then(hash => [filename, hash])
+    .catch(() => [filename, false]);
+})
+// FIXME remove extra items from .pictures regarding nb of items in this array ^^
+// Also remove unused files (previews & thumbs & originals)
+.each(filenameAndHash => {
+  var filename = filenameAndHash[0];
+  var hash = filenameAndHash[1];
+
   if (path.extname(filename) === '.jpg') {
-    log.debug('found', filename);
-    var idStr = leftPad(i, 5, 0);
-    var target = program.album.replace(/[ _\+\(\)]/g, '-').replace(/-+/, '-') + '-' + idStr + '.jpg';
-    album.pictures.push({filename: target, id: i, idStr: idStr});
-    log.info('symlink', filename, 'to', target);
-    fs.symlinkSync(path.join(folders.upload, filename), path.join(folders.originals, target));
+    log.debug('found', filename, hash);
+    if (album.pictures[i - 1] && hash !== false && album.pictures[i - 1].hash === hash) {
+      log.debug('skip (same hash)', filename, hash);
+      album.pictures[i - 1].skip = true;
+    } else {
+      var idStr = leftPad(i, 5, 0);
+      var target = program.album.replace(/[ _\+\(\)]/g, '-').replace(/-+/, '-') + '-' + idStr + '.jpg';
+      album.pictures[i - 1] = {filename: target, id: i, idStr: idStr, hash: hash};
+      log.info('symlink', filename, 'to', target);
+      if (fs.existsSync(path.join(folders.originals, target))) fs.unlinkSync(path.join(folders.originals, target));
+      fs.symlinkSync(path.join(folders.upload, filename), path.join(folders.originals, target));
+    }
     i++;
   } else {
-    log.debug('skip', filename);
+    log.debug('skip (not a jpg)', filename);
     return false;
   }
 })
-.then(() => album.pictures)
+.then(() => album.pictures.filter(picture => picture.skip !== true))
 .each((picture) => {
+  /*
+   * Extract dates from EXIF metadata
+   */
   return exif.read(path.join(folders.originals, picture.filename)).then(data => {
     var date;
     if (data && data.exif) {
@@ -140,8 +172,8 @@ fs.readdirAsync(folders.upload).each(filename => {
     }
   });
 })
-.then(() => album.pictures)
-.each((picture, index) => {
+.then(() => album.pictures.filter(picture => picture.skip !== true))
+.each(picture => {
   /*
    * Resize all originals a save them into ./previews/
    */
@@ -157,11 +189,11 @@ fs.readdirAsync(folders.upload).each(filename => {
   .then(() => sizeOf(output))
   .then(dimensions => {
     delete(dimensions.type);
-    album.pictures[index].preview = dimensions;
+    picture.preview = dimensions;
   });
 })
-.then(() => album.pictures)
-.each((picture, index) => {
+.then(() => album.pictures.filter(picture => picture.skip !== true))
+.each(picture => {
   /*
    * Resize all originals a save them into ./thumbs/
    */
@@ -177,8 +209,8 @@ fs.readdirAsync(folders.upload).each(filename => {
   .then(() => sizeOf(output))
   .then(dimensions => {
     delete(dimensions.type);
-    album.pictures[index].thumb = dimensions;
-    album.pictures[index].flex = {
+    picture.thumb = dimensions;
+    picture.flex = {
       width: Math.floor(dimensions.width * 200 / dimensions.height),
       padding: dimensions.height / dimensions.width * 100
     };
